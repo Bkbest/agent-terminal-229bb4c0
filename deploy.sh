@@ -30,6 +30,8 @@ if [[ ! -d "$DIST_DIR" ]]; then
   exit 1
 fi
 
+echo "Build directory exists: $DIST_DIR"
+
 # Create systemd service file
 UNIT_PATH="/etc/systemd/system/${SERVICE_NAME}.service"
 
@@ -63,9 +65,20 @@ ReadWritePaths=${DIST_DIR}
 WantedBy=multi-user.target
 EOF
 
-# Set proper permissions
+# Set proper permissions BEFORE creating the service
+echo "Setting permissions..."
+chmod 755 "$APP_DIR"
 chown -R "$RUN_USER:$RUN_USER" "$APP_DIR"
 chmod -R 755 "$APP_DIR"
+
+# Ensure dist directory is specifically accessible
+chmod 755 "$DIST_DIR"
+chown -R "$RUN_USER:$RUN_USER" "$DIST_DIR"
+
+# Debug: Check permissions
+echo "Debug: Checking directory permissions..."
+ls -la "$APP_DIR" | head -5
+ls -la "$DIST_DIR" | head -5
 
 # Reload systemd, enable and start the service
 echo "Reloading systemd daemon..."
