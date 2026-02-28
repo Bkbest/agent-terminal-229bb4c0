@@ -63,6 +63,9 @@ ReadWritePaths=${DIST_DIR}
 WantedBy=multi-user.target
 EOF
 
+# Set proper permissions
+chown -R "$RUN_USER:$RUN_USER" "$APP_DIR"
+chmod -R 755 "$APP_DIR"
 
 # Reload systemd, enable and start the service
 echo "Reloading systemd daemon..."
