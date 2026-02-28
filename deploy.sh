@@ -30,10 +30,6 @@ if [[ ! -d "$DIST_DIR" ]]; then
   exit 1
 fi
 
-# Install serve package globally for serving the built app
-echo "Installing serve package..."
-sudo -u "$RUN_USER" npm install -g serve
-
 # Create systemd service file
 UNIT_PATH="/etc/systemd/system/${SERVICE_NAME}.service"
 
@@ -50,7 +46,7 @@ WorkingDirectory=${DIST_DIR}
 Environment="PORT=${PORT}"
 Environment="API_PORT=${API_PORT}"
 Environment="WS_PORT=${WS_PORT}"
-ExecStart=/usr/bin/npx serve -s . -l ${PORT}
+ExecStart=/usr/bin/npx --yes serve@latest -s . -l ${PORT}
 Restart=always
 RestartSec=3
 StandardOutput=journal
