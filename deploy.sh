@@ -10,8 +10,8 @@ WS_PORT="8001"
 APP_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 DIST_DIR="$APP_DIR/dist"
 
-if [[ "$(id -un)" != "$RUN_USER" ]]; then
-  echo "Please run this script as user '$RUN_USER' (current: $(id -un))."
+if [[ "$(id -un)" != "root" ]]; then
+  echo "Please run this script as user 'root' (current: $(id -un))."
   exit 1
 fi
 
