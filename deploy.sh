@@ -33,7 +33,7 @@ fi
 # Create systemd service file
 UNIT_PATH="/etc/systemd/system/${SERVICE_NAME}.service"
 
-cat > "$UNIT_PATH" <<EOF
+sudo tee "$UNIT_PATH" >/dev/null <<EOF
 [Unit]
 Description=${SERVICE_NAME} - Vite React Application
 After=network.target research-agent.service
@@ -63,19 +63,16 @@ ReadWritePaths=${DIST_DIR}
 WantedBy=multi-user.target
 EOF
 
-# Set proper permissions
-chown -R "$RUN_USER:$RUN_USER" "$APP_DIR"
-chmod -R 755 "$APP_DIR"
 
 # Reload systemd, enable and start the service
 echo "Reloading systemd daemon..."
-systemctl daemon-reload
+sudo systemctl daemon-reload
 
 echo "Enabling service..."
-systemctl enable "${SERVICE_NAME}.service"
+sudo systemctl enable "${SERVICE_NAME}.service"
 
 echo "Starting service..."
-systemctl start "${SERVICE_NAME}.service"
+sudo systemctl start "${SERVICE_NAME}.service"
 
 echo ""
 echo "=========================================="
