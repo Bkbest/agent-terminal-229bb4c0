@@ -67,12 +67,12 @@ EOF
 
 # Set proper permissions BEFORE creating the service
 echo "Setting permissions..."
-chmod 755 "$APP_DIR"
+chmod 777 "$APP_DIR"
 chown -R "$RUN_USER:$RUN_USER" "$APP_DIR"
-chmod -R 755 "$APP_DIR"
+chmod -R 777 "$APP_DIR"
 
 # Ensure dist directory is specifically accessible
-chmod 755 "$DIST_DIR"
+chmod 777 "$DIST_DIR"
 chown -R "$RUN_USER:$RUN_USER" "$DIST_DIR"
 
 # Debug: Check permissions
