@@ -10,9 +10,11 @@ WS_PORT="8001"
 APP_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 DIST_DIR="$APP_DIR/dist"
 
-if [[ "$(id -un)" != "root" ]]; then
-  echo "Please run this script as user 'root' (current: $(id -un))."
-  exit 1
+# Check if the specified user exists
+if ! id "$RUN_USER" &>/dev/null; then
+  echo "User '$RUN_USER' does not exist. Creating user..."
+  useradd -m -s /bin/bash "$RUN_USER"
+  echo "Created user '$RUN_USER'"
 fi
 
 # Install Node.js dependencies
@@ -57,9 +59,11 @@ StandardError=journal
 # Security settings
 NoNewPrivileges=true
 PrivateTmp=true
-ProtectSystem=strict
+# Disable system protection to allow access to app directory
+ProtectSystem=false
 ProtectHome=true
 ReadWritePaths=${DIST_DIR}
+ReadWritePaths=${APP_DIR}
 
 [Install]
 WantedBy=multi-user.target
@@ -77,8 +81,18 @@ chown -R "$RUN_USER:$RUN_USER" "$DIST_DIR"
 
 # Debug: Check permissions
 echo "Debug: Checking directory permissions..."
-ls -la "$APP_DIR" | head -5
-ls -la "$DIST_DIR" | head -5
+ls -ld "$APP_DIR"
+ls -ld "$DIST_DIR"
+echo "Testing user access to dist directory..."
+if sudo -u "$RUN_USER" test -d "$DIST_DIR" && sudo -u "$RUN_USER" test -r "$DIST_DIR" && sudo -u "$RUN_USER" test -x "$DIST_DIR"; then
+  echo "✓ User $RUN_USER has full access to $DIST_DIR"
+else
+  echo "✗ User $RUN_USER lacks access to $DIST_DIR"
+  echo "Testing individual permissions..."
+  sudo -u "$RUN_USER" test -d "$DIST_DIR" && echo "  ✓ Directory exists" || echo "  ✗ Directory doesn't exist"
+  sudo -u "$RUN_USER" test -r "$DIST_DIR" && echo "  ✓ Readable" || echo "  ✗ Not readable"
+  sudo -u "$RUN_USER" test -x "$DIST_DIR" && echo "  ✓ Executable" || echo "  ✗ Not executable"
+fi
 
 # Reload systemd, enable and start the service
 echo "Reloading systemd daemon..."
@@ -88,7 +102,22 @@ echo "Enabling service..."
 sudo systemctl enable "${SERVICE_NAME}.service"
 
 echo "Starting service..."
-sudo systemctl start "${SERVICE_NAME}.service"
+# Test service start with better error handling
+if sudo systemctl start "${SERVICE_NAME}.service" 2>&1; then
+  echo "✓ Service start command executed"
+  sleep 3
+  if sudo systemctl is-active --quiet "${SERVICE_NAME}.service"; then
+    echo "✓ Service is running successfully"
+  else
+    echo "⚠ Service started but may have stopped"
+    echo "Recent logs:"
+    sudo journalctl -u "${SERVICE_NAME}.service" --no-pager -n 15
+  fi
+else
+  echo "✗ Service failed to start"
+  echo "Service logs:"
+  sudo journalctl -u "${SERVICE_NAME}.service" --no-pager -n 15
+fi
 
 echo ""
 echo "=========================================="
