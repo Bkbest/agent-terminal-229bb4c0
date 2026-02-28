@@ -156,8 +156,7 @@ export function useTerminal() {
               { type: "info", content: "┌─── AVAILABLE COMMANDS ───────────────────────┐" },
               { type: "info", content: "│  new              Start a new conversation    │" },
               { type: "info", content: "│  threads          List all threads             │" },
-              { type: "info", content: "│  connect <id>     Connect to a thread          │" },
-              { type: "info", content: "│  resume <n>       Resume thread by index       │" },
+              { type: "info", content: "│  connect <id|n>   Connect to a thread          │" },
               { type: "info", content: "│  disconnect       Disconnect current thread    │" },
               { type: "info", content: "│  delete <id|n>    Delete a thread              │" },
               { type: "info", content: "│  history          Show current thread messages  │" },
@@ -199,28 +198,21 @@ export function useTerminal() {
           }
 
           case "connect": {
-            const threadId = args[0];
-            if (!threadId) {
-              addLine("error", "Usage: connect <thread_id>");
+            const target = args[0];
+            if (!target) {
+              addLine("error", "Usage: connect <thread_id | index>");
               break;
+            }
+            let threadId = target;
+            const idx = parseInt(target);
+            if (!isNaN(idx) && idx >= 0 && idx < state.threads.length) {
+              threadId = state.threads[idx].thread_id;
             }
             addLine("system", `Connecting to ${threadId}...`);
             connectToThread(threadId);
-            break;
-          }
-
-          case "resume": {
-            const idx = parseInt(args[0]);
-            if (isNaN(idx) || idx < 0 || idx >= state.threads.length) {
-              addLine("error", `Invalid index. Run 'threads' first to see available threads.`);
-              break;
-            }
-            const thread = state.threads[idx];
-            addLine("system", `Resuming thread: ${thread.thread_id}`);
-            connectToThread(thread.thread_id);
 
             // Load history
-            const messages = await fetchThread(thread.thread_id);
+            const messages = await fetchThread(threadId);
             if (messages.length > 0) {
               addLine("info", "── Conversation History ──");
               for (const msg of messages) {
