@@ -1,5 +1,5 @@
-const API_BASE = `http://localhost:${import.meta.env.VITE_API_PORT || '8001'}`;
-const WS_BASE = `ws://localhost:${import.meta.env.VITE_WS_PORT || '8001'}`;
+const API_BASE = `http://192.168.68.111:${import.meta.env.VITE_API_PORT || '8001'}`;
+const WS_BASE = `ws://192.168.68.111:${import.meta.env.VITE_WS_PORT || '8001'}`;
 
 export interface Thread {
   thread_id: string;
