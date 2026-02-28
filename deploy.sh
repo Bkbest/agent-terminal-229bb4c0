@@ -10,9 +10,8 @@ WS_PORT="8001"
 APP_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 DIST_DIR="$APP_DIR/dist"
 
-# Check if running as root or with sudo
-if [[ "$(id -un)" != "root" ]]; then
-  echo "This script must be run as root (use sudo)"
+if [[ "$(id -un)" != "$RUN_USER" ]]; then
+  echo "Please run this script as user '$RUN_USER' (current: $(id -un))."
   exit 1
 fi
 
