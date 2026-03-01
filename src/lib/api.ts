@@ -1,6 +1,30 @@
 const API_BASE = `http://192.168.68.111:${import.meta.env.VITE_API_PORT || '8001'}`;
 const WS_BASE = `ws://192.168.68.111:${import.meta.env.VITE_WS_PORT || '8001'}`;
 
+let authToken: string | null = localStorage.getItem('agent_token');
+
+export function getToken(): string | null {
+  return authToken;
+}
+
+export function setToken(token: string | null) {
+  authToken = token;
+  if (token) {
+    localStorage.setItem('agent_token', token);
+  } else {
+    localStorage.removeItem('agent_token');
+  }
+}
+
+export function isAuthenticated(): boolean {
+  return !!authToken;
+}
+
+function authHeaders(): Record<string, string> {
+  if (!authToken) return {};
+  return { Authorization: `Bearer ${authToken}` };
+}
+
 export interface Thread {
   thread_id: string;
   created_at: string;
@@ -27,22 +51,41 @@ export interface WsChunkData {
   }>;
 }
 
+export async function login(username: string, password: string): Promise<{ access_token: string; token_type: string }> {
+  const res = await fetch(`${API_BASE}/api/auth/login`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ username, password }),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ error: `Login failed: ${res.status}` }));
+    throw new Error(err.error || err.detail || `Login failed: ${res.status}`);
+  }
+  const data = await res.json();
+  setToken(data.access_token);
+  return data;
+}
+
+export function logout() {
+  setToken(null);
+}
+
 export async function fetchThreads(): Promise<Thread[]> {
-  const res = await fetch(`${API_BASE}/api/threads`);
+  const res = await fetch(`${API_BASE}/api/threads`, { headers: authHeaders() });
   if (!res.ok) throw new Error(`Failed to fetch threads: ${res.status}`);
   const data = await res.json();
   return data.threads ?? [];
 }
 
 export async function fetchThread(threadId: string): Promise<Message[]> {
-  const res = await fetch(`${API_BASE}/api/thread/${threadId}`);
+  const res = await fetch(`${API_BASE}/api/thread/${threadId}`, { headers: authHeaders() });
   if (!res.ok) throw new Error(`Failed to fetch thread: ${res.status}`);
   const data = await res.json();
   return Array.isArray(data) ? data : [];
 }
 
 export async function deleteThread(threadId: string): Promise<void> {
-  const res = await fetch(`${API_BASE}/api/thread/${threadId}`, { method: "DELETE" });
+  const res = await fetch(`${API_BASE}/api/thread/${threadId}`, { method: "DELETE", headers: authHeaders() });
   if (!res.ok) throw new Error(`Failed to delete thread: ${res.status}`);
 }
 
@@ -57,5 +100,6 @@ export function generateThreadId(): string {
 }
 
 export function createWebSocket(): WebSocket {
-  return new WebSocket(`${WS_BASE}/ws`);
+  const url = authToken ? `${WS_BASE}/ws?token=${authToken}` : `${WS_BASE}/ws`;
+  return new WebSocket(url);
 }

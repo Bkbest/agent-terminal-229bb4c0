@@ -6,6 +6,9 @@ import {
   healthCheck,
   generateThreadId,
   createWebSocket,
+  login as apiLogin,
+  logout as apiLogout,
+  isAuthenticated,
   type Thread,
   type Message,
   type WsChunkData,
@@ -24,6 +27,9 @@ interface TerminalState {
   isConnected: boolean;
   isProcessing: boolean;
   threads: Thread[];
+  showLogin: boolean;
+  loginError: string | null;
+  isLoggingIn: boolean;
 }
 
 let lineCounter = 0;
@@ -39,13 +45,18 @@ export function useTerminal() {
       createLine("system", "║       Secure Connection Interface               ║"),
       createLine("system", "╚══════════════════════════════════════════════════╝"),
       createLine("info", ""),
-      createLine("info", 'Type "help" for available commands.'),
+      createLine("info", isAuthenticated()
+        ? 'Authenticated. Type "help" for available commands.'
+        : 'Type "login" to authenticate or "help" for commands.'),
       createLine("info", ""),
     ],
     currentThread: null,
     isConnected: false,
     isProcessing: false,
     threads: [],
+    showLogin: false,
+    loginError: null,
+    isLoggingIn: false,
   });
 
   const wsRef = useRef<WebSocket | null>(null);
@@ -62,9 +73,40 @@ export function useTerminal() {
     }));
   }, []);
 
+  const requireAuth = useCallback((): boolean => {
+    if (!isAuthenticated()) {
+      setState((s) => ({ ...s, showLogin: true, loginError: null }));
+      return false;
+    }
+    return true;
+  }, []);
+
+  const handleLogin = useCallback(async (username: string, password: string) => {
+    setState((s) => ({ ...s, isLoggingIn: true, loginError: null }));
+    try {
+      await apiLogin(username, password);
+      setState((s) => ({
+        ...s,
+        showLogin: false,
+        isLoggingIn: false,
+        loginError: null,
+      }));
+      addLine("system", `⚡ Authenticated as: ${username}`);
+    } catch (err) {
+      setState((s) => ({
+        ...s,
+        isLoggingIn: false,
+        loginError: err instanceof Error ? err.message : "Login failed",
+      }));
+    }
+  }, [addLine]);
+
+  const handleLoginCancel = useCallback(() => {
+    setState((s) => ({ ...s, showLogin: false, loginError: null, isLoggingIn: false }));
+  }, []);
+
   const connectToThread = useCallback(
     (threadId: string) => {
-      // Reuse existing connection
       const existing = connectionsRef.current.get(threadId);
       if (existing && existing.readyState === WebSocket.OPEN) {
         wsRef.current = existing;
@@ -154,25 +196,47 @@ export function useTerminal() {
           case "help": {
             addLines([
               { type: "info", content: "┌─── AVAILABLE COMMANDS ───────────────────────┐" },
-              { type: "info", content: "│  new              Start a new conversation    │" },
-              { type: "info", content: "│  threads          List all threads             │" },
-              { type: "info", content: "│  connect <id>     Connect to a thread          │" },
-              { type: "info", content: "│  resume <n>       Resume thread by index       │" },
-              { type: "info", content: "│  disconnect       Disconnect current thread    │" },
-              { type: "info", content: "│  delete <id|n>    Delete a thread              │" },
-              { type: "info", content: "│  history          Show current thread messages  │" },
-              { type: "info", content: "│  status           Show connection status       │" },
-              { type: "info", content: "│  health           Server health check          │" },
-              { type: "info", content: "│  clear            Clear terminal               │" },
-              { type: "info", content: "│  help             Show this help               │" },
-              { type: "info", content: "├──────────────────────────────────────────────── │" },
-              { type: "info", content: "│  Any other input sends a message to the agent  │" },
+              { type: "info", content: "│  login             Authenticate with server   │" },
+              { type: "info", content: "│  logout            Clear authentication       │" },
+              { type: "info", content: "│  new               Start a new conversation   │" },
+              { type: "info", content: "│  threads           List all threads            │" },
+              { type: "info", content: "│  connect <id>      Connect to a thread         │" },
+              { type: "info", content: "│  resume <n>        Resume thread by index      │" },
+              { type: "info", content: "│  disconnect        Disconnect current thread   │" },
+              { type: "info", content: "│  delete <id|n>     Delete a thread             │" },
+              { type: "info", content: "│  history           Show current thread messages│" },
+              { type: "info", content: "│  status            Show connection status      │" },
+              { type: "info", content: "│  health            Server health check         │" },
+              { type: "info", content: "│  clear             Clear terminal              │" },
+              { type: "info", content: "│  help              Show this help              │" },
+              { type: "info", content: "├─────────────────────────────────────────────── │" },
+              { type: "info", content: "│  Any other input sends a message to the agent │" },
               { type: "info", content: "└───────────────────────────────────────────────┘" },
             ]);
             break;
           }
 
+          case "login": {
+            if (isAuthenticated()) {
+              addLine("info", "Already authenticated. Use 'logout' to switch accounts.");
+            } else {
+              setState((s) => ({ ...s, showLogin: true, loginError: null }));
+            }
+            break;
+          }
+
+          case "logout": {
+            // Disconnect all threads
+            for (const [tid] of connectionsRef.current) {
+              disconnectThread(tid);
+            }
+            apiLogout();
+            addLine("system", "✕ Logged out. Session cleared.");
+            break;
+          }
+
           case "new": {
+            if (!requireAuth()) break;
             const threadId = generateThreadId();
             addLine("system", `Creating new thread: ${threadId}`);
             connectToThread(threadId);
@@ -180,6 +244,7 @@ export function useTerminal() {
           }
 
           case "threads": {
+            if (!requireAuth()) break;
             addLine("system", "Fetching threads...");
             const threads = await fetchThreads();
             setState((s) => ({ ...s, threads }));
@@ -199,6 +264,7 @@ export function useTerminal() {
           }
 
           case "connect": {
+            if (!requireAuth()) break;
             const threadId = args[0];
             if (!threadId) {
               addLine("error", "Usage: connect <thread_id>");
@@ -210,6 +276,7 @@ export function useTerminal() {
           }
 
           case "resume": {
+            if (!requireAuth()) break;
             const idx = parseInt(args[0]);
             if (isNaN(idx) || idx < 0 || idx >= state.threads.length) {
               addLine("error", `Invalid index. Run 'threads' first to see available threads.`);
@@ -219,7 +286,6 @@ export function useTerminal() {
             addLine("system", `Resuming thread: ${thread.thread_id}`);
             connectToThread(thread.thread_id);
 
-            // Load history
             const messages = await fetchThread(thread.thread_id);
             if (messages.length > 0) {
               addLine("info", "── Conversation History ──");
@@ -244,6 +310,7 @@ export function useTerminal() {
           }
 
           case "delete": {
+            if (!requireAuth()) break;
             const target = args[0];
             if (!target) {
               addLine("error", "Usage: delete <thread_id | index>");
@@ -262,6 +329,7 @@ export function useTerminal() {
           }
 
           case "history": {
+            if (!requireAuth()) break;
             if (!state.currentThread) {
               addLine("error", "No active thread. Connect to one first.");
               break;
@@ -283,6 +351,7 @@ export function useTerminal() {
 
           case "status": {
             addLines([
+              { type: "info", content: `Auth:      ${isAuthenticated() ? "yes" : "no"}` },
               { type: "info", content: `Thread:    ${state.currentThread ?? "none"}` },
               { type: "info", content: `Connected: ${state.isConnected ? "yes" : "no"}` },
               { type: "info", content: `Active WS: ${connectionsRef.current.size}` },
@@ -303,7 +372,7 @@ export function useTerminal() {
           }
 
           default: {
-            // Send as message to agent
+            if (!requireAuth()) break;
             if (!state.currentThread || !state.isConnected) {
               addLine("error", 'Not connected to any thread. Use "new" or "connect <id>" first.');
               break;
@@ -326,7 +395,7 @@ export function useTerminal() {
         setState((s) => ({ ...s, isProcessing: false }));
       }
     },
-    [addLine, addLines, connectToThread, disconnectThread, state.currentThread, state.isConnected, state.threads]
+    [addLine, addLines, connectToThread, disconnectThread, requireAuth, state.currentThread, state.isConnected, state.threads]
   );
 
   return {
@@ -334,6 +403,11 @@ export function useTerminal() {
     currentThread: state.currentThread,
     isConnected: state.isConnected,
     isProcessing: state.isProcessing,
+    showLogin: state.showLogin,
+    loginError: state.loginError,
+    isLoggingIn: state.isLoggingIn,
+    handleLogin,
+    handleLoginCancel,
     processCommand,
   };
 }

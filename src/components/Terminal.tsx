@@ -2,9 +2,14 @@ import { useTerminal } from "@/hooks/useTerminal";
 import TerminalHeader from "@/components/TerminalHeader";
 import TerminalOutput from "@/components/TerminalOutput";
 import TerminalInput from "@/components/TerminalInput";
+import TerminalLoginDialog from "@/components/TerminalLoginDialog";
 
 export default function Terminal() {
-  const { lines, currentThread, isConnected, isProcessing, processCommand } = useTerminal();
+  const {
+    lines, currentThread, isConnected, isProcessing,
+    showLogin, loginError, isLoggingIn,
+    handleLogin, handleLoginCancel, processCommand,
+  } = useTerminal();
 
   return (
     <div className="flex h-screen w-screen items-center justify-center bg-background p-4">
@@ -17,6 +22,13 @@ export default function Terminal() {
           currentThread={currentThread}
         />
       </div>
+      <TerminalLoginDialog
+        open={showLogin}
+        onLogin={handleLogin}
+        onCancel={handleLoginCancel}
+        error={loginError}
+        isLoading={isLoggingIn}
+      />
     </div>
   );
 }
