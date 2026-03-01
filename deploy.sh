@@ -56,15 +56,6 @@ RestartSec=3
 StandardOutput=journal
 StandardError=journal
 
-# Security settings
-NoNewPrivileges=true
-PrivateTmp=true
-# Disable system protection to allow access to app directory
-ProtectSystem=false
-ProtectHome=true
-ReadWritePaths=${DIST_DIR}
-ReadWritePaths=${APP_DIR}
-
 [Install]
 WantedBy=multi-user.target
 EOF
