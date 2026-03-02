@@ -38,14 +38,19 @@ export default function TerminalOutput({ lines, isProcessing }: TerminalOutputPr
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [lines, animatedIds]);
 
-  // Determine which AI lines are new (never seen before) synchronously during render
+  // Determine which AI lines are new (never seen before) without mutating refs during render
   const newAiIds = new Set<string>();
   for (const line of lines) {
     if (line.type === "ai" && !seenIds.current.has(line.id) && !animatedIds.has(line.id)) {
       newAiIds.add(line.id);
     }
-    seenIds.current.add(line.id);
   }
+
+  useEffect(() => {
+    for (const line of lines) {
+      seenIds.current.add(line.id);
+    }
+  }, [lines]);
 
   return (
     <div className="flex-1 overflow-y-auto p-4 font-mono text-sm leading-relaxed">
