@@ -1,5 +1,6 @@
-import { useRef, useEffect } from "react";
+import { useRef, useEffect, useState } from "react";
 import type { TerminalLine } from "@/hooks/useTerminal";
+import TypewriterText from "@/components/TypewriterText";
 
 interface TerminalOutputProps {
   lines: TerminalLine[];
@@ -30,9 +31,24 @@ const prefixes: Record<TerminalLine["type"], string> = {
 
 export default function TerminalOutput({ lines, isProcessing }: TerminalOutputProps) {
   const bottomRef = useRef<HTMLDivElement>(null);
+  const [animatedIds, setAnimatedIds] = useState<Set<string>>(new Set());
+  const prevLengthRef = useRef(0);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [lines, animatedIds]);
+
+  // Track which AI lines are "new" (appeared since last render)
+  const newAiIds = useRef<Set<string>>(new Set());
+  useEffect(() => {
+    if (lines.length > prevLengthRef.current) {
+      for (let i = prevLengthRef.current; i < lines.length; i++) {
+        if (lines[i].type === "ai") {
+          newAiIds.current.add(lines[i].id);
+        }
+      }
+    }
+    prevLengthRef.current = lines.length;
   }, [lines]);
 
   return (
@@ -40,7 +56,18 @@ export default function TerminalOutput({ lines, isProcessing }: TerminalOutputPr
       {lines.map((line) => (
         <div key={line.id} className={`${typeStyles[line.type]} whitespace-pre-wrap break-words`}>
           <span className="opacity-60">{prefixes[line.type]}</span>
-          {line.content}
+          {line.type === "ai" && newAiIds.current.has(line.id) && !animatedIds.has(line.id) ? (
+            <TypewriterText
+              text={line.content}
+              speed={12}
+              onComplete={() => {
+                newAiIds.current.delete(line.id);
+                setAnimatedIds((s) => new Set(s).add(line.id));
+              }}
+            />
+          ) : (
+            line.content
+          )}
         </div>
       ))}
       {isProcessing && (
