@@ -32,23 +32,24 @@ const prefixes: Record<TerminalLine["type"], string> = {
 export default function TerminalOutput({ lines, isProcessing }: TerminalOutputProps) {
   const bottomRef = useRef<HTMLDivElement>(null);
   const [animatedIds, setAnimatedIds] = useState<Set<string>>(new Set());
-  const prevLengthRef = useRef(0);
+  const seenIds = useRef<Set<string>>(new Set());
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [lines, animatedIds]);
 
-  // Track which AI lines are "new" (appeared since last render)
-  const newAiIds = useRef<Set<string>>(new Set());
-  useEffect(() => {
-    if (lines.length > prevLengthRef.current) {
-      for (let i = prevLengthRef.current; i < lines.length; i++) {
-        if (lines[i].type === "ai") {
-          newAiIds.current.add(lines[i].id);
-        }
-      }
+  // Determine which AI lines are new (never seen before) without mutating refs during render
+  const newAiIds = new Set<string>();
+  for (const line of lines) {
+    if (line.type === "ai" && !seenIds.current.has(line.id) && !animatedIds.has(line.id)) {
+      newAiIds.add(line.id);
     }
-    prevLengthRef.current = lines.length;
+  }
+
+  useEffect(() => {
+    for (const line of lines) {
+      seenIds.current.add(line.id);
+    }
   }, [lines]);
 
   return (
@@ -56,12 +57,11 @@ export default function TerminalOutput({ lines, isProcessing }: TerminalOutputPr
       {lines.map((line) => (
         <div key={line.id} className={`${typeStyles[line.type]} whitespace-pre-wrap break-words`}>
           <span className="opacity-60">{prefixes[line.type]}</span>
-          {line.type === "ai" && newAiIds.current.has(line.id) && !animatedIds.has(line.id) ? (
+          {line.type === "ai" && newAiIds.has(line.id) && !animatedIds.has(line.id) ? (
             <TypewriterText
               text={line.content}
               speed={12}
               onComplete={() => {
-                newAiIds.current.delete(line.id);
                 setAnimatedIds((s) => new Set(s).add(line.id));
               }}
             />
