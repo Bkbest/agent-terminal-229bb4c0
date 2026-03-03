@@ -1,5 +1,5 @@
-const API_BASE = `http://192.168.68.111:${import.meta.env.VITE_API_PORT || '8001'}`;
-const WS_BASE = `ws://192.168.68.111:${import.meta.env.VITE_WS_PORT || '8001'}`;
+const API_BASE = `http://${import.meta.env.VITE_LANGGRAPH_HOST || '192.168.68.111'}:${import.meta.env.VITE_API_PORT || '8001'}`;
+const WS_BASE = `ws://${import.meta.env.VITE_LANGGRAPH_HOST || '192.168.68.111'}:${import.meta.env.VITE_WS_PORT || '8001'}`;
 
 let authToken: string | null = localStorage.getItem('agent_token');
 

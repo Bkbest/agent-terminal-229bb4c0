@@ -6,6 +6,7 @@ RUN_USER="bkbest21"
 PORT="8080"
 API_PORT="8001"
 WS_PORT="8001"
+LANGGRAPH_HOST='192.168.68.111'
 
 APP_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 DIST_DIR="$APP_DIR/dist"
@@ -49,6 +50,7 @@ User=${RUN_USER}
 WorkingDirectory=${DIST_DIR}
 Environment="PORT=${PORT}"
 Environment="API_PORT=${API_PORT}"
+Environment="LANGGRAPH_HOST=${LANGGRAPH_HOST}"
 Environment="WS_PORT=${WS_PORT}"
 ExecStart=/usr/bin/npx --yes serve@latest -s . -l ${PORT}
 Restart=always
