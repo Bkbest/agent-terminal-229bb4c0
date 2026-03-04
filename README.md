@@ -56,29 +56,30 @@ chmod +x deploy.sh
 sudo ./deploy.sh
 ```
 
-### Configuration in deploy.sh
+### Configuration
 
-Before running the deployment script, you can customize the following variables at the top of `deploy.sh`:
+Before running the deployment script, you need to configure environment variables:
 
-```bash
-SERVICE_NAME="agent-terminal"      # Name of the systemd service
-RUN_USER="bkbest21"                # User to run the service (will be created if doesn't exist)
-PORT="8080"                        # Frontend port
-API_PORT="8001"                    # Backend API port
-WS_PORT="8001"                     # WebSocket port
-LANGGRAPH_HOST='192.168.68.111'    # Backend host IP
-```
+1. Copy the example environment file:
+   ```bash
+   cp .env-example .env
+   ```
 
-**To change the port and user:**
+2. Edit the `.env` file and customize the following variables:
+   ```bash
+   VITE_API_PORT=8001                    # Backend API port
+   VITE_WS_PORT=8001                     # WebSocket port
+   VITE_LANGGRAPH_HOST=192.168.68.111    # Backend host IP
+   ```
 
-1. Edit the `deploy.sh` file
-2. Modify the variables at the top:
-   - Change `RUN_USER` to your desired username
-   - Change `PORT` to your desired frontend port
-   - Change `API_PORT` to your desired API port
-   - Change `WS_PORT` to your desired WebSocket port
-   - Change `LANGGRAPH_HOST` to your backend host IP
-3. Save the file and run `sudo ./deploy.sh`
+3. (Optional) Edit the `deploy.sh` file to change the service name and user:
+   ```bash
+   SERVICE_NAME="agent-terminal"      # Name of the systemd service
+   RUN_USER="bkbest21"                # User to run the service (will be created if doesn't exist)
+   PORT="8080"                        # Frontend port
+   ```
+
+4. Save the files and run `sudo ./deploy.sh`
 
 ## Service Management
 

@@ -4,9 +4,6 @@ set -euo pipefail
 SERVICE_NAME="agent-terminal"
 RUN_USER="bkbest21"
 PORT="8080"
-API_PORT="8001"
-WS_PORT="8001"
-LANGGRAPH_HOST='192.168.68.111'
 
 APP_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 DIST_DIR="$APP_DIR/dist"
@@ -119,8 +116,6 @@ echo "=========================================="
 echo "Service: ${SERVICE_NAME}.service"
 echo "User: ${RUN_USER}"
 echo "Frontend Port: ${PORT}"
-echo "API Port: ${API_PORT}"
-echo "WebSocket Port: ${WS_PORT}"
 echo "App Directory: ${APP_DIR}"
 echo "Build Directory: ${DIST_DIR}"
 echo ""
