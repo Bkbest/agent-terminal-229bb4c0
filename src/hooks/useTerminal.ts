@@ -392,8 +392,13 @@ export function useTerminal() {
           }
         }
       } catch (err) {
-        addLine("error", `Error: ${err instanceof Error ? err.message : String(err)}`);
-        setState((s) => ({ ...s, isProcessing: false }));
+        if (err instanceof SessionExpiredError) {
+          addLine("error", "⚠ Session expired. Please login again.");
+          setState((s) => ({ ...s, showLogin: true, loginError: null, isProcessing: false }));
+        } else {
+          addLine("error", `Error: ${err instanceof Error ? err.message : String(err)}`);
+          setState((s) => ({ ...s, isProcessing: false }));
+        }
       }
     },
     [addLine, addLines, connectToThread, disconnectThread, requireAuth, state.currentThread, state.isConnected, state.threads]
