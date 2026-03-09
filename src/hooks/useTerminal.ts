@@ -9,6 +9,7 @@ import {
   login as apiLogin,
   logout as apiLogout,
   isAuthenticated,
+  SessionExpiredError,
   type Thread,
   type Message,
   type WsChunkData,
