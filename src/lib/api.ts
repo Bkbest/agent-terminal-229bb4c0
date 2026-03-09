@@ -25,6 +25,22 @@ function authHeaders(): Record<string, string> {
   return { Authorization: `Bearer ${authToken}` };
 }
 
+export class SessionExpiredError extends Error {
+  constructor() {
+    super("Session expired. Please login again.");
+    this.name = "SessionExpiredError";
+  }
+}
+
+function handleResponse(res: Response): Response {
+  if (res.status === 401 && authToken) {
+    setToken(null);
+    throw new SessionExpiredError();
+  }
+  return res;
+}
+
+
 export interface Thread {
   thread_id: string;
   created_at: string;
@@ -71,21 +87,21 @@ export function logout() {
 }
 
 export async function fetchThreads(): Promise<Thread[]> {
-  const res = await fetch(`${API_BASE}/api/threads`, { headers: authHeaders() });
+  const res = handleResponse(await fetch(`${API_BASE}/api/threads`, { headers: authHeaders() }));
   if (!res.ok) throw new Error(`Failed to fetch threads: ${res.status}`);
   const data = await res.json();
   return data.threads ?? [];
 }
 
 export async function fetchThread(threadId: string): Promise<Message[]> {
-  const res = await fetch(`${API_BASE}/api/thread/${threadId}`, { headers: authHeaders() });
+  const res = handleResponse(await fetch(`${API_BASE}/api/thread/${threadId}`, { headers: authHeaders() }));
   if (!res.ok) throw new Error(`Failed to fetch thread: ${res.status}`);
   const data = await res.json();
   return Array.isArray(data) ? data : [];
 }
 
 export async function deleteThread(threadId: string): Promise<void> {
-  const res = await fetch(`${API_BASE}/api/thread/${threadId}`, { method: "DELETE", headers: authHeaders() });
+  const res = handleResponse(await fetch(`${API_BASE}/api/thread/${threadId}`, { method: "DELETE", headers: authHeaders() }));
   if (!res.ok) throw new Error(`Failed to delete thread: ${res.status}`);
 }
 
