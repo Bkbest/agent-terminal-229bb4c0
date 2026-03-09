@@ -25,6 +25,22 @@ function authHeaders(): Record<string, string> {
   return { Authorization: `Bearer ${authToken}` };
 }
 
+export class SessionExpiredError extends Error {
+  constructor() {
+    super("Session expired. Please login again.");
+    this.name = "SessionExpiredError";
+  }
+}
+
+function handleResponse(res: Response): Response {
+  if (res.status === 401 && authToken) {
+    setToken(null);
+    throw new SessionExpiredError();
+  }
+  return res;
+}
+
+
 export interface Thread {
   thread_id: string;
   created_at: string;
