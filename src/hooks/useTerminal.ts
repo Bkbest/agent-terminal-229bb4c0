@@ -6,6 +6,7 @@ import {
   healthCheck,
   generateThreadId,
   createWebSocket,
+  fetchMessageCount,
   login as apiLogin,
   logout as apiLogout,
   isAuthenticated,
