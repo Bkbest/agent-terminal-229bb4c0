@@ -431,6 +431,7 @@ export function useTerminal() {
     showLogin: state.showLogin,
     loginError: state.loginError,
     isLoggingIn: state.isLoggingIn,
+    messageCounts: state.messageCounts,
     handleLogin,
     handleLoginCancel,
     processCommand,
