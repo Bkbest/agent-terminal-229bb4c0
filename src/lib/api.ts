@@ -105,6 +105,13 @@ export async function deleteThread(threadId: string): Promise<void> {
   if (!res.ok) throw new Error(`Failed to delete thread: ${res.status}`);
 }
 
+export async function fetchMessageCount(threadId: string): Promise<number> {
+  const res = handleResponse(await fetch(`${API_BASE}/api/thread/${threadId}/message_count`, { headers: authHeaders() }));
+  if (!res.ok) throw new Error(`Failed to fetch message count: ${res.status}`);
+  const data = await res.json();
+  return data.message_count;
+}
+
 export async function healthCheck(): Promise<{ status: string; message: string }> {
   const res = await fetch(`${API_BASE}/api/health`);
   if (!res.ok) throw new Error(`Health check failed: ${res.status}`);
