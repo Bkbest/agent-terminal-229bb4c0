@@ -23,6 +23,11 @@ export interface TerminalLine {
   timestamp: Date;
 }
 
+export interface MessageCountPoint {
+  index: number;
+  count: number;
+}
+
 interface TerminalState {
   lines: TerminalLine[];
   currentThread: string | null;
@@ -32,6 +37,7 @@ interface TerminalState {
   showLogin: boolean;
   loginError: string | null;
   isLoggingIn: boolean;
+  messageCounts: MessageCountPoint[];
 }
 
 let lineCounter = 0;
