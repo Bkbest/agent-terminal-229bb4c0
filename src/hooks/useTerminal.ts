@@ -151,6 +151,17 @@ export function useTerminal() {
               }
             }
           }
+          // Fetch message count after agent reply
+          if (data.thread_id) {
+            fetchMessageCount(data.thread_id)
+              .then((count) => {
+                setState((s) => ({
+                  ...s,
+                  messageCounts: [...s.messageCounts, { index: s.messageCounts.length + 1, count }],
+                }));
+              })
+              .catch(() => { /* silently ignore count fetch errors */ });
+          }
           setState((s) => ({ ...s, isProcessing: false }));
         } catch {
           addLine("output", event.data);
