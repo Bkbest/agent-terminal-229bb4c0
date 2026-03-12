@@ -6,6 +6,7 @@ import {
   healthCheck,
   generateThreadId,
   createWebSocket,
+  fetchMessageCount,
   login as apiLogin,
   logout as apiLogout,
   isAuthenticated,
@@ -22,6 +23,11 @@ export interface TerminalLine {
   timestamp: Date;
 }
 
+export interface MessageCountPoint {
+  index: number;
+  count: number;
+}
+
 interface TerminalState {
   lines: TerminalLine[];
   currentThread: string | null;
@@ -31,6 +37,7 @@ interface TerminalState {
   showLogin: boolean;
   loginError: string | null;
   isLoggingIn: boolean;
+  messageCounts: MessageCountPoint[];
 }
 
 let lineCounter = 0;
@@ -58,6 +65,7 @@ export function useTerminal() {
     showLogin: false,
     loginError: null,
     isLoggingIn: false,
+    messageCounts: [],
   });
 
   const wsRef = useRef<WebSocket | null>(null);
@@ -120,7 +128,7 @@ export function useTerminal() {
       ws.onopen = () => {
         connectionsRef.current.set(threadId, ws);
         wsRef.current = ws;
-        setState((s) => ({ ...s, currentThread: threadId, isConnected: true }));
+        setState((s) => ({ ...s, currentThread: threadId, isConnected: true, messageCounts: [] }));
         addLine("system", `⚡ Connected to thread: ${threadId}`);
       };
 
@@ -142,6 +150,17 @@ export function useTerminal() {
                 }
               }
             }
+          }
+          // Fetch message count after agent reply
+          if (data.thread_id) {
+            fetchMessageCount(data.thread_id)
+              .then((count) => {
+                setState((s) => ({
+                  ...s,
+                  messageCounts: [...s.messageCounts, { index: s.messageCounts.length + 1, count }],
+                }));
+              })
+              .catch(() => { /* silently ignore count fetch errors */ });
           }
           setState((s) => ({ ...s, isProcessing: false }));
         } catch {
@@ -412,6 +431,7 @@ export function useTerminal() {
     showLogin: state.showLogin,
     loginError: state.loginError,
     isLoggingIn: state.isLoggingIn,
+    messageCounts: state.messageCounts,
     handleLogin,
     handleLoginCancel,
     processCommand,
