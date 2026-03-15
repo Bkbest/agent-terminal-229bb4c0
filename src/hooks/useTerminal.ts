@@ -160,13 +160,13 @@ export function useTerminal() {
               }
             }
           }
-          // Track cumulative token usage
+          // Track per-reply token usage
           if (replyTokens > 0) {
             setState((s) => ({
               ...s,
               tokenCounts: [...s.tokenCounts, {
                 index: s.tokenCounts.length + 1,
-                tokens: (s.tokenCounts[s.tokenCounts.length - 1]?.tokens ?? 0) + replyTokens,
+                tokens: replyTokens,
               }],
             }));
           }
