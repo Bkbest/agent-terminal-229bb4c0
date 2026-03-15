@@ -28,6 +28,11 @@ export interface MessageCountPoint {
   count: number;
 }
 
+export interface TokenCountPoint {
+  index: number;
+  tokens: number;
+}
+
 interface TerminalState {
   lines: TerminalLine[];
   currentThread: string | null;
