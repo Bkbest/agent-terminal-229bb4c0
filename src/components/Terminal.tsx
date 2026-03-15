@@ -4,13 +4,16 @@ import TerminalOutput from "@/components/TerminalOutput";
 import TerminalInput from "@/components/TerminalInput";
 import TerminalLoginDialog from "@/components/TerminalLoginDialog";
 import MessageCountChart from "@/components/MessageCountChart";
+import TokenCountChart from "@/components/TokenCountChart";
 
 export default function Terminal() {
   const {
     lines, currentThread, isConnected, isProcessing,
-    showLogin, loginError, isLoggingIn, messageCounts,
+    showLogin, loginError, isLoggingIn, messageCounts, tokenCounts,
     handleLogin, handleLoginCancel, processCommand,
   } = useTerminal();
+
+  const showSidebar = messageCounts.length > 0 || tokenCounts.length > 0;
 
   return (
     <div className="flex h-screen w-screen items-center justify-center bg-background p-4">
@@ -25,9 +28,10 @@ export default function Terminal() {
               currentThread={currentThread}
             />
           </div>
-          {messageCounts.length > 0 && (
-            <div className="w-72 border-l border-border p-3 flex flex-col justify-end overflow-hidden">
+          {showSidebar && (
+            <div className="w-72 border-l border-border p-3 flex flex-col justify-end gap-3 overflow-y-auto">
               <MessageCountChart data={messageCounts} />
+              <TokenCountChart data={tokenCounts} />
             </div>
           )}
         </div>

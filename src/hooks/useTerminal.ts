@@ -28,6 +28,11 @@ export interface MessageCountPoint {
   count: number;
 }
 
+export interface TokenCountPoint {
+  index: number;
+  tokens: number;
+}
+
 interface TerminalState {
   lines: TerminalLine[];
   currentThread: string | null;
@@ -38,6 +43,7 @@ interface TerminalState {
   loginError: string | null;
   isLoggingIn: boolean;
   messageCounts: MessageCountPoint[];
+  tokenCounts: TokenCountPoint[];
 }
 
 let lineCounter = 0;
@@ -66,6 +72,7 @@ export function useTerminal() {
     loginError: null,
     isLoggingIn: false,
     messageCounts: [],
+    tokenCounts: [],
   });
 
   const wsRef = useRef<WebSocket | null>(null);
@@ -128,18 +135,20 @@ export function useTerminal() {
       ws.onopen = () => {
         connectionsRef.current.set(threadId, ws);
         wsRef.current = ws;
-        setState((s) => ({ ...s, currentThread: threadId, isConnected: true, messageCounts: [] }));
+        setState((s) => ({ ...s, currentThread: threadId, isConnected: true, messageCounts: [], tokenCounts: [] }));
         addLine("system", `⚡ Connected to thread: ${threadId}`);
       };
 
       ws.onmessage = (event) => {
         try {
           const data: WsChunkData = JSON.parse(event.data);
+          let replyTokens = 0;
           if (data.data) {
             for (const nodeData of Object.values(data.data)) {
               if (nodeData.ai_messages) {
                 for (const msg of nodeData.ai_messages) {
                   const tokens = msg.usage_metadata?.total_tokens;
+                  if (tokens) replyTokens += tokens;
                   const suffix = tokens ? ` [${tokens} tokens]` : "";
                   addLine("ai", `${msg.content}${suffix}`);
                 }
@@ -150,6 +159,16 @@ export function useTerminal() {
                 }
               }
             }
+          }
+          // Track cumulative token usage
+          if (replyTokens > 0) {
+            setState((s) => ({
+              ...s,
+              tokenCounts: [...s.tokenCounts, {
+                index: s.tokenCounts.length + 1,
+                tokens: (s.tokenCounts[s.tokenCounts.length - 1]?.tokens ?? 0) + replyTokens,
+              }],
+            }));
           }
           // Fetch message count after agent reply
           if (data.thread_id) {
@@ -432,6 +451,7 @@ export function useTerminal() {
     loginError: state.loginError,
     isLoggingIn: state.isLoggingIn,
     messageCounts: state.messageCounts,
+    tokenCounts: state.tokenCounts,
     handleLogin,
     handleLoginCancel,
     processCommand,
