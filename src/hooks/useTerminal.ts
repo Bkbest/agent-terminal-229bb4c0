@@ -43,6 +43,7 @@ interface TerminalState {
   loginError: string | null;
   isLoggingIn: boolean;
   messageCounts: MessageCountPoint[];
+  tokenCounts: TokenCountPoint[];
 }
 
 let lineCounter = 0;
