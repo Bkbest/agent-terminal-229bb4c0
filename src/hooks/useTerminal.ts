@@ -135,7 +135,7 @@ export function useTerminal() {
       ws.onopen = () => {
         connectionsRef.current.set(threadId, ws);
         wsRef.current = ws;
-        setState((s) => ({ ...s, currentThread: threadId, isConnected: true, messageCounts: [] }));
+        setState((s) => ({ ...s, currentThread: threadId, isConnected: true, messageCounts: [], tokenCounts: [] }));
         addLine("system", `⚡ Connected to thread: ${threadId}`);
       };
 
