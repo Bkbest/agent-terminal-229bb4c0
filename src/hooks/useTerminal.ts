@@ -142,11 +142,13 @@ export function useTerminal() {
       ws.onmessage = (event) => {
         try {
           const data: WsChunkData = JSON.parse(event.data);
+          let replyTokens = 0;
           if (data.data) {
             for (const nodeData of Object.values(data.data)) {
               if (nodeData.ai_messages) {
                 for (const msg of nodeData.ai_messages) {
                   const tokens = msg.usage_metadata?.total_tokens;
+                  if (tokens) replyTokens += tokens;
                   const suffix = tokens ? ` [${tokens} tokens]` : "";
                   addLine("ai", `${msg.content}${suffix}`);
                 }
@@ -157,6 +159,16 @@ export function useTerminal() {
                 }
               }
             }
+          }
+          // Track cumulative token usage
+          if (replyTokens > 0) {
+            setState((s) => ({
+              ...s,
+              tokenCounts: [...s.tokenCounts, {
+                index: s.tokenCounts.length + 1,
+                tokens: (s.tokenCounts[s.tokenCounts.length - 1]?.tokens ?? 0) + replyTokens,
+              }],
+            }));
           }
           // Fetch message count after agent reply
           if (data.thread_id) {
