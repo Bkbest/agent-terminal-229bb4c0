@@ -33,6 +33,11 @@ export interface TokenCountPoint {
   tokens: number;
 }
 
+export interface OutputTokenCountPoint {
+  index: number;
+  tokens: number;
+}
+
 interface TerminalState {
   lines: TerminalLine[];
   currentThread: string | null;
