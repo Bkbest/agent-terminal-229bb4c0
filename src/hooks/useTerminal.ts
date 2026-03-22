@@ -187,6 +187,10 @@ export function useTerminal() {
                 index: s.outputTokenCounts.length + 1,
                 tokens: replyOutputTokens,
               }],
+              totalTokenCounts: [...s.totalTokenCounts, {
+                index: s.totalTokenCounts.length + 1,
+                tokens: replyTotalTokens,
+              }],
             }));
           }
           // Fetch message count after agent reply
