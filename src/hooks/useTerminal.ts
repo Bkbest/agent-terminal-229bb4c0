@@ -50,6 +50,7 @@ interface TerminalState {
   messageCounts: MessageCountPoint[];
   tokenCounts: TokenCountPoint[];
   outputTokenCounts: OutputTokenCountPoint[];
+  totalTokenCounts: TokenCountPoint[];
 }
 
 let lineCounter = 0;
