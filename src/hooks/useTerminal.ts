@@ -50,7 +50,6 @@ interface TerminalState {
   messageCounts: MessageCountPoint[];
   tokenCounts: TokenCountPoint[];
   outputTokenCounts: OutputTokenCountPoint[];
-  totalTokenCounts: TokenCountPoint[];
 }
 
 let lineCounter = 0;
@@ -81,7 +80,6 @@ export function useTerminal() {
     messageCounts: [],
     tokenCounts: [],
     outputTokenCounts: [],
-    totalTokenCounts: [],
   });
 
   const wsRef = useRef<WebSocket | null>(null);
@@ -144,7 +142,7 @@ export function useTerminal() {
       ws.onopen = () => {
         connectionsRef.current.set(threadId, ws);
         wsRef.current = ws;
-        setState((s) => ({ ...s, currentThread: threadId, isConnected: true, messageCounts: [], tokenCounts: [], outputTokenCounts: [], totalTokenCounts: [] }));
+        setState((s) => ({ ...s, currentThread: threadId, isConnected: true, messageCounts: [], tokenCounts: [], outputTokenCounts: [] }));
         addLine("system", `⚡ Connected to thread: ${threadId}`);
       };
 
@@ -153,17 +151,15 @@ export function useTerminal() {
           const data: WsChunkData = JSON.parse(event.data);
           let replyInputTokens = 0;
           let replyOutputTokens = 0;
-          let replyTotalTokens = 0;
           if (data.data) {
             for (const nodeData of Object.values(data.data)) {
               if (nodeData.ai_messages) {
                 for (const msg of nodeData.ai_messages) {
-                  const total = msg.usage_metadata?.total_tokens;
                   const input = msg.usage_metadata?.input_tokens;
                   const output = msg.usage_metadata?.output_tokens;
+                  const total = msg.usage_metadata?.total_tokens;
                   if (input) replyInputTokens += input;
                   if (output) replyOutputTokens += output;
-                  if (total) replyTotalTokens += total;
                   const suffix = total ? ` [${total} tokens]` : "";
                   addLine("ai", `${msg.content}${suffix}`);
                 }
@@ -176,7 +172,7 @@ export function useTerminal() {
             }
           }
           // Track per-reply token usage
-          if (replyInputTokens > 0 || replyOutputTokens > 0 || replyTotalTokens > 0) {
+          if (replyInputTokens > 0 || replyOutputTokens > 0) {
             setState((s) => ({
               ...s,
               tokenCounts: [...s.tokenCounts, {
@@ -186,10 +182,6 @@ export function useTerminal() {
               outputTokenCounts: [...s.outputTokenCounts, {
                 index: s.outputTokenCounts.length + 1,
                 tokens: replyOutputTokens,
-              }],
-              totalTokenCounts: [...s.totalTokenCounts, {
-                index: s.totalTokenCounts.length + 1,
-                tokens: replyTotalTokens,
               }],
             }));
           }
@@ -351,10 +343,31 @@ export function useTerminal() {
             const messages = await fetchThread(thread.thread_id);
             if (messages.length > 0) {
               addLine("info", "── Conversation History ──");
+              const historyInputTokens: TokenCountPoint[] = [];
+              const historyOutputTokens: OutputTokenCountPoint[] = [];
+              let replyIdx = 0;
               for (const msg of messages) {
                 if (msg.type === "human") addLine("human", msg.content);
-                else if (msg.type === "ai") addLine("ai", msg.content);
+                else if (msg.type === "ai") {
+                  addLine("ai", msg.content);
+                  if (msg.usage_metadata) {
+                    replyIdx++;
+                    if (msg.usage_metadata.input_tokens) {
+                      historyInputTokens.push({ index: replyIdx, tokens: msg.usage_metadata.input_tokens });
+                    }
+                    if (msg.usage_metadata.output_tokens) {
+                      historyOutputTokens.push({ index: replyIdx, tokens: msg.usage_metadata.output_tokens });
+                    }
+                  }
+                }
                 else if (msg.type === "tool") addLine("tool", msg.content);
+              }
+              if (historyInputTokens.length > 0 || historyOutputTokens.length > 0) {
+                setState((s) => ({
+                  ...s,
+                  tokenCounts: historyInputTokens,
+                  outputTokenCounts: historyOutputTokens,
+                }));
               }
               addLine("info", "── End of History ──");
             }
@@ -476,7 +489,6 @@ export function useTerminal() {
     messageCounts: state.messageCounts,
     tokenCounts: state.tokenCounts,
     outputTokenCounts: state.outputTokenCounts,
-    totalTokenCounts: state.totalTokenCounts,
     handleLogin,
     handleLoginCancel,
     processCommand,
