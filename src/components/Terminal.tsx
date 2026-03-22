@@ -11,7 +11,7 @@ import OutputTokensChart from "@/components/OutputTokensChart";
 export default function Terminal() {
   const {
     lines, currentThread, isConnected, isProcessing,
-    showLogin, loginError, isLoggingIn, messageCounts, tokenCounts, outputTokenCounts,
+    showLogin, loginError, isLoggingIn, messageCounts, tokenCounts, outputTokenCounts, totalTokenCounts,
     handleLogin, handleLoginCancel, processCommand,
   } = useTerminal();
 
