@@ -34,7 +34,7 @@ export default function Terminal() {
             <div className="w-72 border-l border-border p-3 flex flex-col justify-end gap-3 overflow-y-auto">
               <MessageCountChart data={messageCounts} />
               <TokenCountChart data={tokenCounts} />
-              <TotalTokensChart data={tokenCounts} />
+              <TotalTokensChart data={totalTokenCounts} />
               <OutputTokensChart data={outputTokenCounts} />
             </div>
           )}

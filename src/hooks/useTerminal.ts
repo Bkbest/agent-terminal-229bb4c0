@@ -476,6 +476,7 @@ export function useTerminal() {
     messageCounts: state.messageCounts,
     tokenCounts: state.tokenCounts,
     outputTokenCounts: state.outputTokenCounts,
+    totalTokenCounts: state.totalTokenCounts,
     handleLogin,
     handleLoginCancel,
     processCommand,
