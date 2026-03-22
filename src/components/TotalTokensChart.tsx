@@ -28,7 +28,7 @@ export default function TotalTokensChart({ data }: TotalTokensChartProps) {
       </div>
       <div className="h-32">
         <ResponsiveContainer width="100%" height="100%">
-          <LineChart data={cumulative} margin={{ top: 4, right: 8, bottom: 4, left: 8 }}>
+          <LineChart data={data} margin={{ top: 4, right: 8, bottom: 4, left: 8 }}>
             <CartesianGrid
               strokeDasharray="2 4"
               stroke="hsl(120 50% 15%)"
