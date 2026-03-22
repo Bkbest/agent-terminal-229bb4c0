@@ -156,12 +156,11 @@ export function useTerminal() {
             for (const nodeData of Object.values(data.data)) {
               if (nodeData.ai_messages) {
                 for (const msg of nodeData.ai_messages) {
-                  const total = msg.usage_metadata?.total_tokens;
                   const input = msg.usage_metadata?.input_tokens;
                   const output = msg.usage_metadata?.output_tokens;
+                  const total = msg.usage_metadata?.total_tokens;
                   if (input) replyInputTokens += input;
                   if (output) replyOutputTokens += output;
-                  if (total) replyTotalTokens += total;
                   const suffix = total ? ` [${total} tokens]` : "";
                   addLine("ai", `${msg.content}${suffix}`);
                 }
