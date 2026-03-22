@@ -33,6 +33,11 @@ export interface TokenCountPoint {
   tokens: number;
 }
 
+export interface OutputTokenCountPoint {
+  index: number;
+  tokens: number;
+}
+
 interface TerminalState {
   lines: TerminalLine[];
   currentThread: string | null;
@@ -44,6 +49,8 @@ interface TerminalState {
   isLoggingIn: boolean;
   messageCounts: MessageCountPoint[];
   tokenCounts: TokenCountPoint[];
+  outputTokenCounts: OutputTokenCountPoint[];
+  totalTokenCounts: TokenCountPoint[];
 }
 
 let lineCounter = 0;
@@ -73,6 +80,8 @@ export function useTerminal() {
     isLoggingIn: false,
     messageCounts: [],
     tokenCounts: [],
+    outputTokenCounts: [],
+    totalTokenCounts: [],
   });
 
   const wsRef = useRef<WebSocket | null>(null);
@@ -135,21 +144,27 @@ export function useTerminal() {
       ws.onopen = () => {
         connectionsRef.current.set(threadId, ws);
         wsRef.current = ws;
-        setState((s) => ({ ...s, currentThread: threadId, isConnected: true, messageCounts: [], tokenCounts: [] }));
+        setState((s) => ({ ...s, currentThread: threadId, isConnected: true, messageCounts: [], tokenCounts: [], outputTokenCounts: [], totalTokenCounts: [] }));
         addLine("system", `⚡ Connected to thread: ${threadId}`);
       };
 
       ws.onmessage = (event) => {
         try {
           const data: WsChunkData = JSON.parse(event.data);
-          let replyTokens = 0;
+          let replyInputTokens = 0;
+          let replyOutputTokens = 0;
+          let replyTotalTokens = 0;
           if (data.data) {
             for (const nodeData of Object.values(data.data)) {
               if (nodeData.ai_messages) {
                 for (const msg of nodeData.ai_messages) {
-                  const tokens = msg.usage_metadata?.total_tokens;
-                  if (tokens) replyTokens += tokens;
-                  const suffix = tokens ? ` [${tokens} tokens]` : "";
+                  const total = msg.usage_metadata?.total_tokens;
+                  const input = msg.usage_metadata?.input_tokens;
+                  const output = msg.usage_metadata?.output_tokens;
+                  if (input) replyInputTokens += input;
+                  if (output) replyOutputTokens += output;
+                  if (total) replyTotalTokens += total;
+                  const suffix = total ? ` [${total} tokens]` : "";
                   addLine("ai", `${msg.content}${suffix}`);
                 }
               }
@@ -161,12 +176,20 @@ export function useTerminal() {
             }
           }
           // Track per-reply token usage
-          if (replyTokens > 0) {
+          if (replyInputTokens > 0 || replyOutputTokens > 0 || replyTotalTokens > 0) {
             setState((s) => ({
               ...s,
               tokenCounts: [...s.tokenCounts, {
                 index: s.tokenCounts.length + 1,
-                tokens: replyTokens,
+                tokens: replyInputTokens,
+              }],
+              outputTokenCounts: [...s.outputTokenCounts, {
+                index: s.outputTokenCounts.length + 1,
+                tokens: replyOutputTokens,
+              }],
+              totalTokenCounts: [...s.totalTokenCounts, {
+                index: s.totalTokenCounts.length + 1,
+                tokens: replyTotalTokens,
               }],
             }));
           }
@@ -452,6 +475,8 @@ export function useTerminal() {
     isLoggingIn: state.isLoggingIn,
     messageCounts: state.messageCounts,
     tokenCounts: state.tokenCounts,
+    outputTokenCounts: state.outputTokenCounts,
+    totalTokenCounts: state.totalTokenCounts,
     handleLogin,
     handleLoginCancel,
     processCommand,
