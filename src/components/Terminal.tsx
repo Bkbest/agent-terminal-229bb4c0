@@ -5,6 +5,7 @@ import TerminalInput from "@/components/TerminalInput";
 import TerminalLoginDialog from "@/components/TerminalLoginDialog";
 import MessageCountChart from "@/components/MessageCountChart";
 import TokenCountChart from "@/components/TokenCountChart";
+import TotalTokensChart from "@/components/TotalTokensChart";
 
 export default function Terminal() {
   const {
