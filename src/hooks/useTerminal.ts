@@ -173,7 +173,7 @@ export function useTerminal() {
             }
           }
           // Track per-reply token usage
-          if (replyInputTokens > 0 || replyOutputTokens > 0 || replyTotalTokens > 0) {
+          if (replyInputTokens > 0 || replyOutputTokens > 0) {
             setState((s) => ({
               ...s,
               tokenCounts: [...s.tokenCounts, {
@@ -183,10 +183,6 @@ export function useTerminal() {
               outputTokenCounts: [...s.outputTokenCounts, {
                 index: s.outputTokenCounts.length + 1,
                 tokens: replyOutputTokens,
-              }],
-              totalTokenCounts: [...s.totalTokenCounts, {
-                index: s.totalTokenCounts.length + 1,
-                tokens: replyTotalTokens,
               }],
             }));
           }
