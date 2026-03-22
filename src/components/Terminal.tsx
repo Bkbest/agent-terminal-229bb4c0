@@ -5,6 +5,7 @@ import TerminalInput from "@/components/TerminalInput";
 import TerminalLoginDialog from "@/components/TerminalLoginDialog";
 import MessageCountChart from "@/components/MessageCountChart";
 import TokenCountChart from "@/components/TokenCountChart";
+import TotalTokensChart from "@/components/TotalTokensChart";
 
 export default function Terminal() {
   const {
@@ -32,6 +33,7 @@ export default function Terminal() {
             <div className="w-72 border-l border-border p-3 flex flex-col justify-end gap-3 overflow-y-auto">
               <MessageCountChart data={messageCounts} />
               <TokenCountChart data={tokenCounts} />
+              <TotalTokensChart data={tokenCounts} />
             </div>
           )}
         </div>

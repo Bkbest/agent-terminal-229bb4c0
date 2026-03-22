@@ -5,26 +5,33 @@ interface DataPoint {
   tokens: number;
 }
 
-interface TokenCountChartProps {
+interface TotalTokensChartProps {
   data: DataPoint[];
 }
 
-export default function TokenCountChart({ data }: TokenCountChartProps) {
+export default function TotalTokensChart({ data }: TotalTokensChartProps) {
   if (data.length === 0) return null;
+
+  // Build cumulative data
+  const cumulative = data.reduce<DataPoint[]>((acc, point) => {
+    const prev = acc.length > 0 ? acc[acc.length - 1].tokens : 0;
+    acc.push({ index: point.index, tokens: prev + point.tokens });
+    return acc;
+  }, []);
 
   return (
     <div className="border border-border border-glow rounded bg-card p-3">
       <div className="flex items-center gap-2 mb-2">
         <span className="text-terminal-cyan text-glow-cyan text-xs font-mono tracking-wider uppercase">
-          ◈ Context Usage
+          ◈ Total Tokens
         </span>
         <span className="text-muted-foreground text-xs font-mono">
-          ({data[data.length - 1]?.tokens ?? 0} per reply)
+          ({cumulative[cumulative.length - 1]?.tokens ?? 0} total)
         </span>
       </div>
       <div className="h-32">
         <ResponsiveContainer width="100%" height="100%">
-          <LineChart data={data} margin={{ top: 4, right: 8, bottom: 4, left: 8 }}>
+          <LineChart data={cumulative} margin={{ top: 4, right: 8, bottom: 4, left: 8 }}>
             <CartesianGrid
               strokeDasharray="2 4"
               stroke="hsl(120 50% 15%)"
@@ -46,33 +53,33 @@ export default function TokenCountChart({ data }: TokenCountChartProps) {
             <Tooltip
               contentStyle={{
                 backgroundColor: "hsl(220 18% 7%)",
-                border: "1px solid hsl(30 100% 25%)",
+                border: "1px solid hsl(280 100% 40%)",
                 borderRadius: "2px",
                 fontFamily: "JetBrains Mono",
                 fontSize: "11px",
-                color: "hsl(30 100% 60%)",
-                boxShadow: "0 0 8px hsl(30 100% 50% / 0.15)",
+                color: "hsl(280 100% 70%)",
+                boxShadow: "0 0 8px hsl(280 100% 50% / 0.15)",
               }}
               labelFormatter={(v) => `Reply #${v}`}
-              formatter={(value: number) => [`${value}`, "Tokens"]}
+              formatter={(value: number) => [`${value}`, "Total Tokens"]}
             />
             <Line
               type="monotone"
               dataKey="tokens"
-              stroke="hsl(30 100% 60%)"
+              stroke="hsl(280 100% 70%)"
               strokeWidth={2}
               dot={{
-                fill: "hsl(30 100% 60%)",
+                fill: "hsl(280 100% 70%)",
                 r: 3,
                 strokeWidth: 0,
               }}
               activeDot={{
-                fill: "hsl(50 100% 55%)",
+                fill: "hsl(300 100% 75%)",
                 r: 5,
                 strokeWidth: 0,
               }}
               style={{
-                filter: "drop-shadow(0 0 4px hsl(30 100% 60% / 0.5))",
+                filter: "drop-shadow(0 0 4px hsl(280 100% 70% / 0.5))",
               }}
             />
           </LineChart>
