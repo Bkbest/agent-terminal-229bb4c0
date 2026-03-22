@@ -149,8 +149,8 @@ export function useTerminal() {
       ws.onmessage = (event) => {
         try {
           const data: WsChunkData = JSON.parse(event.data);
-          const newInputPoints: { tokens: number }[] = [];
-          const newOutputPoints: { tokens: number }[] = [];
+          let replyInputTokens = 0;
+          let replyOutputTokens = 0;
           if (data.data) {
             for (const nodeData of Object.values(data.data)) {
               if (nodeData.ai_messages) {
@@ -158,10 +158,8 @@ export function useTerminal() {
                   const input = msg.usage_metadata?.input_tokens;
                   const output = msg.usage_metadata?.output_tokens;
                   const total = msg.usage_metadata?.total_tokens;
-                  if (input || output) {
-                    if (input) newInputPoints.push({ tokens: input });
-                    if (output) newOutputPoints.push({ tokens: output });
-                  }
+                  if (input) replyInputTokens += input;
+                  if (output) replyOutputTokens += output;
                   const suffix = total ? ` [${total} tokens]` : "";
                   addLine("ai", `${msg.content}${suffix}`);
                 }
@@ -173,19 +171,19 @@ export function useTerminal() {
               }
             }
           }
-          // Track per-message token usage — one data point per AI message
-          if (newInputPoints.length > 0 || newOutputPoints.length > 0) {
-            setState((s) => {
-              const updatedTokenCounts = [...s.tokenCounts];
-              for (const pt of newInputPoints) {
-                updatedTokenCounts.push({ index: updatedTokenCounts.length + 1, tokens: pt.tokens });
-              }
-              const updatedOutputCounts = [...s.outputTokenCounts];
-              for (const pt of newOutputPoints) {
-                updatedOutputCounts.push({ index: updatedOutputCounts.length + 1, tokens: pt.tokens });
-              }
-              return { ...s, tokenCounts: updatedTokenCounts, outputTokenCounts: updatedOutputCounts };
-            });
+          // Track per-reply token usage
+          if (replyInputTokens > 0 || replyOutputTokens > 0) {
+            setState((s) => ({
+              ...s,
+              tokenCounts: [...s.tokenCounts, {
+                index: s.tokenCounts.length + 1,
+                tokens: replyInputTokens,
+              }],
+              outputTokenCounts: [...s.outputTokenCounts, {
+                index: s.outputTokenCounts.length + 1,
+                tokens: replyOutputTokens,
+              }],
+            }));
           }
           // Fetch message count after agent reply
           if (data.thread_id) {
