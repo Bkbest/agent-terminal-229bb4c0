@@ -343,10 +343,31 @@ export function useTerminal() {
             const messages = await fetchThread(thread.thread_id);
             if (messages.length > 0) {
               addLine("info", "── Conversation History ──");
+              const historyInputTokens: TokenCountPoint[] = [];
+              const historyOutputTokens: OutputTokenCountPoint[] = [];
+              let replyIdx = 0;
               for (const msg of messages) {
                 if (msg.type === "human") addLine("human", msg.content);
-                else if (msg.type === "ai") addLine("ai", msg.content);
+                else if (msg.type === "ai") {
+                  addLine("ai", msg.content);
+                  if (msg.usage_metadata) {
+                    replyIdx++;
+                    if (msg.usage_metadata.input_tokens) {
+                      historyInputTokens.push({ index: replyIdx, tokens: msg.usage_metadata.input_tokens });
+                    }
+                    if (msg.usage_metadata.output_tokens) {
+                      historyOutputTokens.push({ index: replyIdx, tokens: msg.usage_metadata.output_tokens });
+                    }
+                  }
+                }
                 else if (msg.type === "tool") addLine("tool", msg.content);
+              }
+              if (historyInputTokens.length > 0 || historyOutputTokens.length > 0) {
+                setState((s) => ({
+                  ...s,
+                  tokenCounts: historyInputTokens,
+                  outputTokenCounts: historyOutputTokens,
+                }));
               }
               addLine("info", "── End of History ──");
             }
