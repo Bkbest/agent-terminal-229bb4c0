@@ -152,7 +152,6 @@ export function useTerminal() {
           const data: WsChunkData = JSON.parse(event.data);
           let replyInputTokens = 0;
           let replyOutputTokens = 0;
-          let replyTotalTokens = 0;
           if (data.data) {
             for (const nodeData of Object.values(data.data)) {
               if (nodeData.ai_messages) {
