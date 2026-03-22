@@ -49,6 +49,7 @@ interface TerminalState {
   isLoggingIn: boolean;
   messageCounts: MessageCountPoint[];
   tokenCounts: TokenCountPoint[];
+  outputTokenCounts: OutputTokenCountPoint[];
 }
 
 let lineCounter = 0;
