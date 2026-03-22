@@ -80,7 +80,6 @@ export function useTerminal() {
     messageCounts: [],
     tokenCounts: [],
     outputTokenCounts: [],
-    });
   });
 
   const wsRef = useRef<WebSocket | null>(null);
