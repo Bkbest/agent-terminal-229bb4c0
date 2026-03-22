@@ -16,10 +16,10 @@ export default function TokenCountChart({ data }: TokenCountChartProps) {
     <div className="border border-border border-glow rounded bg-card p-3">
       <div className="flex items-center gap-2 mb-2">
         <span className="text-terminal-cyan text-glow-cyan text-xs font-mono tracking-wider uppercase">
-          ◈ Token Usage
+          ◈ Context Usage
         </span>
         <span className="text-muted-foreground text-xs font-mono">
-          ({data[data.length - 1]?.tokens ?? 0} total)
+          ({data[data.length - 1]?.tokens ?? 0} per reply)
         </span>
       </div>
       <div className="h-32">
