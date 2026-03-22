@@ -5,13 +5,13 @@ import TerminalInput from "@/components/TerminalInput";
 import TerminalLoginDialog from "@/components/TerminalLoginDialog";
 import MessageCountChart from "@/components/MessageCountChart";
 import TokenCountChart from "@/components/TokenCountChart";
-import TotalTokensChart from "@/components/TotalTokensChart";
 import OutputTokensChart from "@/components/OutputTokensChart";
+import CostChart from "@/components/CostChart";
 
 export default function Terminal() {
   const {
     lines, currentThread, isConnected, isProcessing,
-    showLogin, loginError, isLoggingIn, messageCounts, tokenCounts, outputTokenCounts, totalTokenCounts,
+    showLogin, loginError, isLoggingIn, messageCounts, tokenCounts, outputTokenCounts,
     handleLogin, handleLoginCancel, processCommand,
   } = useTerminal();
 
@@ -34,8 +34,8 @@ export default function Terminal() {
             <div className="w-72 border-l border-border p-3 flex flex-col justify-end gap-3 overflow-y-auto">
               <MessageCountChart data={messageCounts} />
               <TokenCountChart data={tokenCounts} />
-              <TotalTokensChart data={totalTokenCounts} />
               <OutputTokensChart data={outputTokenCounts} />
+              <CostChart inputTokens={tokenCounts} outputTokens={outputTokenCounts} />
             </div>
           )}
         </div>
