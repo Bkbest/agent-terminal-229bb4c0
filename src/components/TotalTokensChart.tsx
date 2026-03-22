@@ -23,7 +23,7 @@ export default function TotalTokensChart({ data }: TotalTokensChartProps) {
           ◈ Total Tokens
         </span>
         <span className="text-muted-foreground text-xs font-mono">
-          ({cumulative[cumulative.length - 1]?.tokens ?? 0} total)
+          ({data[data.length - 1]?.tokens ?? 0} total)
         </span>
       </div>
       <div className="h-32">
