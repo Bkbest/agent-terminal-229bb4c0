@@ -362,6 +362,16 @@ export function useTerminal() {
                 }
                 else if (msg.type === "tool") addLine("tool", msg.content);
               }
+              // Fetch current message count for the graph
+              fetchMessageCount(thread.thread_id)
+                .then((count) => {
+                  setState((s) => ({
+                    ...s,
+                    messageCounts: [{ index: 1, count }],
+                  }));
+                })
+                .catch(() => { /* silently ignore */ });
+
               if (historyInputTokens.length > 0 || historyOutputTokens.length > 0) {
                 setState((s) => ({
                   ...s,
