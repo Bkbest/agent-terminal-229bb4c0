@@ -79,6 +79,7 @@ export function useTerminal() {
     isLoggingIn: false,
     messageCounts: [],
     tokenCounts: [],
+    outputTokenCounts: [],
   });
 
   const wsRef = useRef<WebSocket | null>(null);
