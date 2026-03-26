@@ -1,6 +1,32 @@
-import { useRef, useEffect, useState } from "react";
+import { useRef, useEffect, useState, useMemo } from "react";
 import type { TerminalLine } from "@/hooks/useTerminal";
 import TypewriterText from "@/components/TypewriterText";
+
+const URL_REGEX = /(https?:\/\/[^\s<>"')\]]+)/g;
+
+function Linkify({ children }: { children: string }) {
+  const parts = children.split(URL_REGEX);
+  if (parts.length === 1) return <>{children}</>;
+  return (
+    <>
+      {parts.map((part, i) =>
+        URL_REGEX.test(part) ? (
+          <a
+            key={i}
+            href={part}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline text-terminal-cyan hover:opacity-80 transition-opacity"
+          >
+            {part}
+          </a>
+        ) : (
+          <span key={i}>{part}</span>
+        )
+      )}
+    </>
+  );
+}
 
 interface TerminalOutputProps {
   lines: TerminalLine[];
@@ -66,7 +92,7 @@ export default function TerminalOutput({ lines, isProcessing }: TerminalOutputPr
               }}
             />
           ) : (
-            line.content
+            <Linkify>{line.content}</Linkify>
           )}
         </div>
       ))}
