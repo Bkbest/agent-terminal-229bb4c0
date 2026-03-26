@@ -4,6 +4,9 @@ set -euo pipefail
 SERVICE_NAME="agent-terminal"
 RUN_USER="bkbest21"
 PORT="8080"
+API_PORT="8001"
+LANGGRAPH_HOST="192.168.68.111"
+WS_PORT='8001'
 
 APP_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 DIST_DIR="$APP_DIR/dist"
