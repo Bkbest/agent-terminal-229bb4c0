@@ -17,10 +17,10 @@ export default function TerminalHeader({ isConnected, currentThread, children }:
           <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-primary/80" />
         </div>
         <span className="text-xs text-muted-foreground tracking-widest uppercase hidden sm:inline">
-          LangGraph Agent Terminal
+          Agent Terminal
         </span>
         <span className="text-xs text-muted-foreground tracking-wider uppercase sm:hidden">
-          LAT
+          AT
         </span>
       </div>
 

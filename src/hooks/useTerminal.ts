@@ -61,7 +61,7 @@ export function useTerminal() {
   const [state, setState] = useState<TerminalState>({
     lines: [
       createLine("system", "══════════════════════════════════"),
-      createLine("system", "  LANGGRAPH AGENT TERMINAL v1.0.0"),
+      createLine("system", "  AGENT TERMINAL v1.0.0"),
       createLine("system", "  Secure Connection Interface"),
       createLine("system", "══════════════════════════════════"),
       createLine("info", ""),
