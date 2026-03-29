@@ -480,6 +480,21 @@ export function useTerminal() {
             break;
           }
 
+          case "show": {
+            const subCmd = args[0]?.toLowerCase();
+            if (subCmd === "city") {
+              if (!requireAuth()) break;
+              addLine("system", "Rendering Machine City...");
+              const threads = await fetchThreads();
+              setState((s) => ({ ...s, threads }));
+              const cityLines = generateMachineCity(threads.length);
+              addLines(cityLines.map((content) => ({ type: "info" as const, content })));
+            } else {
+              addLine("info", 'Usage: show city');
+            }
+            break;
+          }
+
           default: {
             if (!requireAuth()) break;
             if (!state.currentThread || !state.isConnected) {
