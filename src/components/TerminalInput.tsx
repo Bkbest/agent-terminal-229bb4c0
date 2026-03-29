@@ -47,9 +47,10 @@ export default function TerminalInput({ onSubmit, isProcessing, currentThread }:
     }
   };
 
+  const isMobile = typeof window !== "undefined" && window.innerWidth < 768;
   const prompt = currentThread
-    ? `agent@${currentThread.slice(0, 20)}:~$`
-    : "agent@disconnected:~$";
+    ? isMobile ? `$ ` : `agent@${currentThread.slice(0, 20)}:~$`
+    : isMobile ? `$ ` : "agent@disconnected:~$";
 
   return (
     <div

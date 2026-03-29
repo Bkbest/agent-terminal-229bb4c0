@@ -1,26 +1,33 @@
+import { ReactNode } from "react";
+
 interface TerminalHeaderProps {
   isConnected: boolean;
   currentThread: string | null;
+  children?: ReactNode;
 }
 
-export default function TerminalHeader({ isConnected, currentThread }: TerminalHeaderProps) {
+export default function TerminalHeader({ isConnected, currentThread, children }: TerminalHeaderProps) {
   return (
-    <div className="flex items-center justify-between border-b border-border px-4 py-2 select-none">
-      <div className="flex items-center gap-3">
+    <div className="flex items-center justify-between border-b border-border px-3 sm:px-4 py-2 select-none gap-2">
+      <div className="flex items-center gap-2 sm:gap-3 min-w-0">
         {/* Traffic light dots */}
-        <div className="flex gap-1.5">
-          <div className="w-3 h-3 rounded-full bg-destructive/80" />
-          <div className="w-3 h-3 rounded-full bg-terminal-amber/80" />
-          <div className="w-3 h-3 rounded-full bg-primary/80" />
+        <div className="flex gap-1.5 shrink-0">
+          <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-destructive/80" />
+          <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-terminal-amber/80" />
+          <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-primary/80" />
         </div>
-        <span className="text-xs text-muted-foreground tracking-widest uppercase">
+        <span className="text-xs text-muted-foreground tracking-widest uppercase hidden sm:inline">
           LangGraph Agent Terminal
+        </span>
+        <span className="text-xs text-muted-foreground tracking-wider uppercase sm:hidden">
+          LAT
         </span>
       </div>
 
-      <div className="flex items-center gap-3 text-xs">
+      <div className="flex items-center gap-2 sm:gap-3 text-xs shrink-0">
+        {children}
         {currentThread && (
-          <span className="text-muted-foreground truncate max-w-[200px]">
+          <span className="text-muted-foreground truncate max-w-[80px] sm:max-w-[200px] hidden sm:inline">
             {currentThread}
           </span>
         )}
@@ -31,7 +38,7 @@ export default function TerminalHeader({ isConnected, currentThread }: TerminalH
             }`}
           />
           <span className={isConnected ? "text-foreground" : "text-destructive"}>
-            {isConnected ? "ONLINE" : "OFFLINE"}
+            {isConnected ? "ON" : "OFF"}
           </span>
         </div>
       </div>
