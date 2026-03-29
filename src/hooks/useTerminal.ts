@@ -84,6 +84,7 @@ export function useTerminal() {
 
   const wsRef = useRef<WebSocket | null>(null);
   const connectionsRef = useRef<Map<string, WebSocket>>(new Map());
+  const currentThreadRef = useRef<string | null>(null);
 
   const addLine = useCallback((type: TerminalLine["type"], content: string) => {
     setState((s) => ({ ...s, lines: [...s.lines, createLine(type, content)] }));
@@ -133,6 +134,7 @@ export function useTerminal() {
       const existing = connectionsRef.current.get(threadId);
       if (existing && existing.readyState === WebSocket.OPEN) {
         wsRef.current = existing;
+        currentThreadRef.current = threadId;
         setState((s) => ({ ...s, currentThread: threadId, isConnected: true }));
         return;
       }
@@ -142,11 +144,14 @@ export function useTerminal() {
       ws.onopen = () => {
         connectionsRef.current.set(threadId, ws);
         wsRef.current = ws;
+        currentThreadRef.current = threadId;
         setState((s) => ({ ...s, currentThread: threadId, isConnected: true, messageCounts: [], tokenCounts: [], outputTokenCounts: [] }));
         addLine("system", `⚡ Connected to thread: ${threadId}`);
       };
 
       ws.onmessage = (event) => {
+        // Ignore messages from threads that are no longer active
+        if (currentThreadRef.current !== threadId) return;
         try {
           const data: WsChunkData = JSON.parse(event.data);
           let replyInputTokens = 0;
