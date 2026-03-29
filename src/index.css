@@ -177,10 +177,6 @@
     animation: cursor-blink 1s step-end infinite;
   }
 
-  .animate-cursor-blink-caret {
-    caret-color: transparent;
-  }
-
   @keyframes typing-dot {
     0%, 20% { opacity: 0.2; }
     50% { opacity: 1; }

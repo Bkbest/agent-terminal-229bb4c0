@@ -67,11 +67,11 @@ export default function TerminalInput({ onSubmit, isProcessing, currentThread }:
         onKeyDown={handleKeyDown}
         disabled={isProcessing}
         placeholder={isProcessing ? "Processing..." : "Type a command or message..."}
-        className="flex-1 bg-transparent text-foreground text-sm outline-none placeholder:text-muted-foreground/50 disabled:opacity-50 font-mono animate-cursor-blink-caret"
+        className="flex-1 bg-transparent text-foreground text-sm outline-none placeholder:text-muted-foreground/50 caret-primary disabled:opacity-50 font-mono"
         autoComplete="off"
         spellCheck={false}
       />
-      <span className="text-primary animate-cursor-blink text-sm select-none">█</span>
+      <span className="text-foreground animate-cursor-blink text-sm select-none">█</span>
     </div>
   );
 }
