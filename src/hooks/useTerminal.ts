@@ -269,6 +269,7 @@ export function useTerminal() {
               { type: "info", content: "│  history           Show current thread messages│" },
               { type: "info", content: "│  status            Show connection status      │" },
               { type: "info", content: "│  health            Server health check         │" },
+              { type: "info", content: "│  theme <light|dark> Switch terminal theme      │" },
               { type: "info", content: "│  clear             Clear terminal              │" },
               { type: "info", content: "│  help              Show this help              │" },
               { type: "info", content: "├─────────────────────────────────────────────── │" },
@@ -461,6 +462,20 @@ export function useTerminal() {
 
           case "clear": {
             setState((s) => ({ ...s, lines: [] }));
+            break;
+          }
+
+          case "theme": {
+            const mode = args[0]?.toLowerCase();
+            if (mode === "light") {
+              document.documentElement.classList.add("light");
+              addLine("system", "◈ Switched to light theme.");
+            } else if (mode === "dark") {
+              document.documentElement.classList.remove("light");
+              addLine("system", "◈ Switched to dark theme.");
+            } else {
+              addLine("info", 'Usage: theme <light|dark>');
+            }
             break;
           }
 
