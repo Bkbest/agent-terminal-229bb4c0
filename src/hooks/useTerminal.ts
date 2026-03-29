@@ -134,6 +134,7 @@ export function useTerminal() {
       const existing = connectionsRef.current.get(threadId);
       if (existing && existing.readyState === WebSocket.OPEN) {
         wsRef.current = existing;
+        currentThreadRef.current = threadId;
         setState((s) => ({ ...s, currentThread: threadId, isConnected: true }));
         return;
       }
