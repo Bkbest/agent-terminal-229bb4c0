@@ -15,6 +15,7 @@ import {
   type Message,
   type WsChunkData,
 } from "@/lib/api";
+import { generateMachineCity } from "@/lib/machineCity";
 
 export interface TerminalLine {
   id: string;
@@ -270,8 +271,8 @@ export function useTerminal() {
               { type: "info", content: "│  status            Show connection status      │" },
               { type: "info", content: "│  health            Server health check         │" },
               { type: "info", content: "│  theme <light|dark> Switch terminal theme      │" },
+              { type: "info", content: "│  show city         View the Machine City       │" },
               { type: "info", content: "│  clear             Clear terminal              │" },
-              { type: "info", content: "│  help              Show this help              │" },
               { type: "info", content: "├─────────────────────────────────────────────── │" },
               { type: "info", content: "│  Any other input sends a message to the agent │" },
               { type: "info", content: "└───────────────────────────────────────────────┘" },
@@ -475,6 +476,21 @@ export function useTerminal() {
               addLine("system", "◈ Switched to dark theme.");
             } else {
               addLine("info", 'Usage: theme <light|dark>');
+            }
+            break;
+          }
+
+          case "show": {
+            const subCmd = args[0]?.toLowerCase();
+            if (subCmd === "city") {
+              if (!requireAuth()) break;
+              addLine("system", "Rendering Machine City...");
+              const threads = await fetchThreads();
+              setState((s) => ({ ...s, threads }));
+              const cityLines = generateMachineCity(threads.length);
+              addLines(cityLines.map((content) => ({ type: "info" as const, content })));
+            } else {
+              addLine("info", 'Usage: show city');
             }
             break;
           }
