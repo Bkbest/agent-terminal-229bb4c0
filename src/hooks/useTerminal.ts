@@ -333,7 +333,7 @@ export function useTerminal() {
               break;
             }
             addLine("system", `Connecting to ${threadId}...`);
-            connectToThread(threadId);
+            connectToThread(threadId, true);
             break;
           }
 
@@ -346,7 +346,7 @@ export function useTerminal() {
             }
             const thread = state.threads[idx];
             addLine("system", `Resuming thread: ${thread.thread_id}`);
-            connectToThread(thread.thread_id);
+            connectToThread(thread.thread_id, true);
 
             const messages = await fetchThread(thread.thread_id);
             if (messages.length > 0) {
