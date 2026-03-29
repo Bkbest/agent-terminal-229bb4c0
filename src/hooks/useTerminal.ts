@@ -150,6 +150,8 @@ export function useTerminal() {
       };
 
       ws.onmessage = (event) => {
+        // Ignore messages from threads that are no longer active
+        if (currentThreadRef.current !== threadId) return;
         try {
           const data: WsChunkData = JSON.parse(event.data);
           let replyInputTokens = 0;
