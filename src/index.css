@@ -177,14 +177,8 @@
     animation: cursor-blink 1s step-end infinite;
   }
 
-  @keyframes caret-blink {
-    0%, 50% { caret-color: hsl(var(--primary)); }
-    51%, 100% { caret-color: transparent; }
-  }
-
   .animate-cursor-blink-caret {
-    caret-color: hsl(var(--primary));
-    animation: caret-blink 1s step-end infinite;
+    caret-color: transparent;
   }
 
   @keyframes typing-dot {
