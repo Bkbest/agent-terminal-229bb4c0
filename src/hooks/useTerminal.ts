@@ -15,6 +15,7 @@ import {
   type Message,
   type WsChunkData,
 } from "@/lib/api";
+import { generateMachineCity } from "@/lib/machineCity";
 
 export interface TerminalLine {
   id: string;
