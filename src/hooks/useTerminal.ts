@@ -216,8 +216,8 @@ export function useTerminal() {
         if (wsRef.current === ws) {
           wsRef.current = null;
           setState((s) => ({ ...s, isConnected: false }));
+          addLine("system", `✕ Disconnected from thread: ${threadId}`);
         }
-        addLine("system", `✕ Disconnected from thread: ${threadId}`);
       };
 
       ws.onerror = () => {
