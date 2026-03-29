@@ -147,6 +147,9 @@ export function useTerminal() {
         currentThreadRef.current = threadId;
         setState((s) => ({ ...s, currentThread: threadId, isConnected: true, messageCounts: [], tokenCounts: [], outputTokenCounts: [] }));
         addLine("system", `⚡ Connected to thread: ${threadId}`);
+        if (isExisting) {
+          ws.send(JSON.stringify({ message: "reconnect", thread_id: threadId }));
+        }
       };
 
       ws.onmessage = (event) => {
