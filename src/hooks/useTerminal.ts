@@ -130,7 +130,7 @@ export function useTerminal() {
   }, []);
 
   const connectToThread = useCallback(
-    (threadId: string) => {
+    (threadId: string, isExisting = false) => {
       const existing = connectionsRef.current.get(threadId);
       if (existing && existing.readyState === WebSocket.OPEN) {
         wsRef.current = existing;
@@ -147,6 +147,9 @@ export function useTerminal() {
         currentThreadRef.current = threadId;
         setState((s) => ({ ...s, currentThread: threadId, isConnected: true, messageCounts: [], tokenCounts: [], outputTokenCounts: [] }));
         addLine("system", `⚡ Connected to thread: ${threadId}`);
+        if (isExisting) {
+          ws.send(JSON.stringify({ message: "reconnect", thread_id: threadId }));
+        }
       };
 
       ws.onmessage = (event) => {
@@ -330,7 +333,7 @@ export function useTerminal() {
               break;
             }
             addLine("system", `Connecting to ${threadId}...`);
-            connectToThread(threadId);
+            connectToThread(threadId, true);
             break;
           }
 
@@ -343,7 +346,7 @@ export function useTerminal() {
             }
             const thread = state.threads[idx];
             addLine("system", `Resuming thread: ${thread.thread_id}`);
-            connectToThread(thread.thread_id);
+            connectToThread(thread.thread_id, true);
 
             const messages = await fetchThread(thread.thread_id);
             if (messages.length > 0) {
