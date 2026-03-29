@@ -60,10 +60,10 @@ function createLine(type: TerminalLine["type"], content: string): TerminalLine {
 export function useTerminal() {
   const [state, setState] = useState<TerminalState>({
     lines: [
-      createLine("system", "╔══════════════════════════════════════════════════╗"),
-      createLine("system", "║       LANGGRAPH AGENT TERMINAL v1.0.0           ║"),
-      createLine("system", "║       Secure Connection Interface               ║"),
-      createLine("system", "╚══════════════════════════════════════════════════╝"),
+      createLine("system", "══════════════════════════════════"),
+      createLine("system", "  LANGGRAPH AGENT TERMINAL v1.0.0"),
+      createLine("system", "  Secure Connection Interface"),
+      createLine("system", "══════════════════════════════════"),
       createLine("info", ""),
       createLine("info", isAuthenticated()
         ? 'Authenticated. Type "help" for available commands.'
