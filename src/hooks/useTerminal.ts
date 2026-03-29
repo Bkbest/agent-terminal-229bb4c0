@@ -130,7 +130,7 @@ export function useTerminal() {
   }, []);
 
   const connectToThread = useCallback(
-    (threadId: string) => {
+    (threadId: string, isExisting = false) => {
       const existing = connectionsRef.current.get(threadId);
       if (existing && existing.readyState === WebSocket.OPEN) {
         wsRef.current = existing;
