@@ -501,21 +501,7 @@ export function useTerminal() {
           }
 
           default: {
-            if (!requireAuth()) break;
-            if (!state.currentThread || !state.isConnected) {
-              addLine("error", 'Not connected to any thread. Use "new" or "connect <id>" first.');
-              break;
-            }
-
-            const ws = connectionsRef.current.get(state.currentThread);
-            if (!ws || ws.readyState !== WebSocket.OPEN) {
-              addLine("error", "WebSocket not ready. Try reconnecting.");
-              break;
-            }
-
-            setState((s) => ({ ...s, isProcessing: true }));
-            addLine("human", trimmed);
-            ws.send(JSON.stringify({ message: trimmed, thread_id: state.currentThread }));
+            addLine("error", `Unknown command: /${command}. Type "/help" for available commands.`);
             break;
           }
         }
