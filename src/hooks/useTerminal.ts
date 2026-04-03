@@ -257,24 +257,42 @@ export function useTerminal() {
       const command = cmd.toLowerCase();
 
       try {
+        if (!isCommand) {
+          // Not a command — send as message to agent
+          if (!requireAuth()) return;
+          if (!state.currentThread || !state.isConnected) {
+            addLine("error", 'Not connected to any thread. Use "/new" or "/connect <id>" first.');
+            return;
+          }
+          const ws = connectionsRef.current.get(state.currentThread);
+          if (!ws || ws.readyState !== WebSocket.OPEN) {
+            addLine("error", "WebSocket not ready. Try reconnecting.");
+            return;
+          }
+          setState((s) => ({ ...s, isProcessing: true }));
+          addLine("human", trimmed);
+          ws.send(JSON.stringify({ message: trimmed, thread_id: state.currentThread }));
+          return;
+        }
+
         switch (command) {
           case "help": {
             addLines([
               { type: "info", content: "┌─── AVAILABLE COMMANDS ───────────────────────┐" },
-              { type: "info", content: "│  login             Authenticate with server   │" },
-              { type: "info", content: "│  logout            Clear authentication       │" },
-              { type: "info", content: "│  new               Start a new conversation   │" },
-              { type: "info", content: "│  threads           List all threads            │" },
-              { type: "info", content: "│  connect <id>      Connect to a thread         │" },
-              { type: "info", content: "│  resume <n>        Resume thread by index      │" },
-              { type: "info", content: "│  disconnect        Disconnect current thread   │" },
-              { type: "info", content: "│  delete <id|n>     Delete a thread             │" },
-              { type: "info", content: "│  history           Show current thread messages│" },
-              { type: "info", content: "│  status            Show connection status      │" },
-              { type: "info", content: "│  health            Server health check         │" },
-              { type: "info", content: "│  theme <light|dark> Switch terminal theme      │" },
-              { type: "info", content: "│  clear             Clear terminal              │" },
-              { type: "info", content: "│  help              Show this help              │" },
+              { type: "info", content: "│  /login            Authenticate with server   │" },
+              { type: "info", content: "│  /logout           Clear authentication       │" },
+              { type: "info", content: "│  /new              Start a new conversation   │" },
+              { type: "info", content: "│  /threads          List all threads            │" },
+              { type: "info", content: "│  /connect <id>     Connect to a thread         │" },
+              { type: "info", content: "│  /resume <n>       Resume thread by index      │" },
+              { type: "info", content: "│  /disconnect       Disconnect current thread   │" },
+              { type: "info", content: "│  /delete <id|n>    Delete a thread             │" },
+              { type: "info", content: "│  /history          Show current thread messages│" },
+              { type: "info", content: "│  /status           Show connection status      │" },
+              { type: "info", content: "│  /health           Server health check         │" },
+              { type: "info", content: "│  /theme <light|dark> Switch terminal theme     │" },
+              { type: "info", content: "│  /clear            Clear terminal              │" },
+              { type: "info", content: "│  /help             Show this help              │" },
               { type: "info", content: "├─────────────────────────────────────────────── │" },
               { type: "info", content: "│  Any other input sends a message to the agent │" },
               { type: "info", content: "└───────────────────────────────────────────────┘" },
