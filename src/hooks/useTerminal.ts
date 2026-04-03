@@ -250,7 +250,10 @@ export function useTerminal() {
 
       addLine("input", trimmed);
 
-      const [cmd, ...args] = trimmed.split(/\s+/);
+      // Commands must start with "/"
+      const isCommand = trimmed.startsWith("/");
+      const commandInput = isCommand ? trimmed.slice(1) : trimmed;
+      const [cmd, ...args] = commandInput.split(/\s+/);
       const command = cmd.toLowerCase();
 
       try {
