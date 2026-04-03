@@ -66,8 +66,8 @@ export function useTerminal() {
       createLine("system", "══════════════════════════════════"),
       createLine("info", ""),
       createLine("info", isAuthenticated()
-        ? 'Authenticated. Type "help" for available commands.'
-        : 'Type "login" to authenticate or "help" for commands.'),
+        ? 'Authenticated. Type "/help" for available commands.'
+        : 'Type "/login" to authenticate or "/help" for commands.'),
       createLine("info", ""),
     ],
     currentThread: null,
