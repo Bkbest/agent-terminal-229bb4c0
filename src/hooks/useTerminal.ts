@@ -87,8 +87,8 @@ export function useTerminal() {
   const connectionsRef = useRef<Map<string, WebSocket>>(new Map());
   const currentThreadRef = useRef<string | null>(null);
 
-  const addLine = useCallback((type: TerminalLine["type"], content: string) => {
-    setState((s) => ({ ...s, lines: [...s.lines, createLine(type, content)] }));
+  const addLine = useCallback((type: TerminalLine["type"], content: string, images?: string[]) => {
+    setState((s) => ({ ...s, lines: [...s.lines, createLine(type, content, images)] }));
   }, []);
 
   const addLines = useCallback((lines: Array<{ type: TerminalLine["type"]; content: string }>) => {
