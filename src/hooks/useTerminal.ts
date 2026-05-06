@@ -21,6 +21,7 @@ export interface TerminalLine {
   type: "input" | "output" | "system" | "error" | "ai" | "human" | "tool" | "info";
   content: string;
   timestamp: Date;
+  images?: string[];
 }
 
 export interface MessageCountPoint {
@@ -53,8 +54,8 @@ interface TerminalState {
 }
 
 let lineCounter = 0;
-function createLine(type: TerminalLine["type"], content: string): TerminalLine {
-  return { id: `line-${++lineCounter}`, type, content, timestamp: new Date() };
+function createLine(type: TerminalLine["type"], content: string, images?: string[]): TerminalLine {
+  return { id: `line-${++lineCounter}`, type, content, timestamp: new Date(), images };
 }
 
 export function useTerminal() {
@@ -86,8 +87,8 @@ export function useTerminal() {
   const connectionsRef = useRef<Map<string, WebSocket>>(new Map());
   const currentThreadRef = useRef<string | null>(null);
 
-  const addLine = useCallback((type: TerminalLine["type"], content: string) => {
-    setState((s) => ({ ...s, lines: [...s.lines, createLine(type, content)] }));
+  const addLine = useCallback((type: TerminalLine["type"], content: string, images?: string[]) => {
+    setState((s) => ({ ...s, lines: [...s.lines, createLine(type, content, images)] }));
   }, []);
 
   const addLines = useCallback((lines: Array<{ type: TerminalLine["type"]; content: string }>) => {
@@ -244,11 +245,11 @@ export function useTerminal() {
   );
 
   const processCommand = useCallback(
-    async (input: string) => {
+    async (input: string, images?: string[]) => {
       const trimmed = input.trim();
-      if (!trimmed) return;
+      if (!trimmed && (!images || images.length === 0)) return;
 
-      addLine("input", trimmed);
+      if (trimmed) addLine("input", trimmed);
 
       // Commands must start with "/"
       const isCommand = trimmed.startsWith("/");
@@ -270,8 +271,10 @@ export function useTerminal() {
             return;
           }
           setState((s) => ({ ...s, isProcessing: true }));
-          addLine("human", trimmed);
-          ws.send(JSON.stringify({ message: trimmed, thread_id: state.currentThread }));
+          addLine("human", trimmed, images);
+          const payload: Record<string, unknown> = { message: trimmed, thread_id: state.currentThread };
+          if (images && images.length > 0) payload.images = images;
+          ws.send(JSON.stringify(payload));
           return;
         }
 
