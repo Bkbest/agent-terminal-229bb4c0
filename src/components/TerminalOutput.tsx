@@ -94,6 +94,19 @@ export default function TerminalOutput({ lines, isProcessing }: TerminalOutputPr
           ) : (
             <Linkify>{line.content}</Linkify>
           )}
+          {line.images && line.images.length > 0 && (
+            <div className="flex flex-wrap gap-2 mt-2">
+              {line.images.map((src, i) => (
+                <a key={i} href={src} target="_blank" rel="noopener noreferrer">
+                  <img
+                    src={src}
+                    alt={`attachment-${i}`}
+                    className="max-h-48 max-w-full rounded border border-border"
+                  />
+                </a>
+              ))}
+            </div>
+          )}
         </div>
       ))}
       {isProcessing && (
