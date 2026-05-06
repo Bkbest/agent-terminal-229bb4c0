@@ -21,6 +21,7 @@ export interface TerminalLine {
   type: "input" | "output" | "system" | "error" | "ai" | "human" | "tool" | "info";
   content: string;
   timestamp: Date;
+  images?: string[];
 }
 
 export interface MessageCountPoint {
