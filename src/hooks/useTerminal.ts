@@ -54,8 +54,8 @@ interface TerminalState {
 }
 
 let lineCounter = 0;
-function createLine(type: TerminalLine["type"], content: string): TerminalLine {
-  return { id: `line-${++lineCounter}`, type, content, timestamp: new Date() };
+function createLine(type: TerminalLine["type"], content: string, images?: string[]): TerminalLine {
+  return { id: `line-${++lineCounter}`, type, content, timestamp: new Date(), images };
 }
 
 export function useTerminal() {
