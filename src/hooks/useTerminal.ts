@@ -245,11 +245,11 @@ export function useTerminal() {
   );
 
   const processCommand = useCallback(
-    async (input: string) => {
+    async (input: string, images?: string[]) => {
       const trimmed = input.trim();
-      if (!trimmed) return;
+      if (!trimmed && (!images || images.length === 0)) return;
 
-      addLine("input", trimmed);
+      if (trimmed) addLine("input", trimmed);
 
       // Commands must start with "/"
       const isCommand = trimmed.startsWith("/");
@@ -271,8 +271,10 @@ export function useTerminal() {
             return;
           }
           setState((s) => ({ ...s, isProcessing: true }));
-          addLine("human", trimmed);
-          ws.send(JSON.stringify({ message: trimmed, thread_id: state.currentThread }));
+          addLine("human", trimmed, images);
+          const payload: Record<string, unknown> = { message: trimmed, thread_id: state.currentThread };
+          if (images && images.length > 0) payload.images = images;
+          ws.send(JSON.stringify(payload));
           return;
         }
 
